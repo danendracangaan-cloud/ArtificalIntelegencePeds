@@ -23,6 +23,7 @@ MYMOD(net.interactiveped, InteractivePeds, 1.0, you)
 static std::string PROXY_HOST = "192.168.1.10";   // IP PC/VPS yang jalanin proxy.py (bisa diubah lewat file .ini)
 static std::string PROXY_PORT = "8787";
 static float TALK_RANGE = 2.5f;
+static std::string g_status = "belum dijalankan";   // ditampilkan lewat toast di layar
 
 // Nama paket asli game (dibaca dari proses sendiri, jadi aman walau APK hasil repack)
 static std::string GetPackageName() {
@@ -59,6 +60,10 @@ static void LoadConfig() {
             dataDir = soDir.substr(0, soDir.size() - tail.size() + 1);   // .../<pkg>/
     }
     std::vector<std::string> dirs;
+    // Lokasi resmi dari AML sendiri (sama seperti yang dipakai mod lain, mis. Natural Disaster)
+    for (const char* p : { aml->GetConfigPath(), aml->GetAndroidDataPath(), aml->GetAndroidDataRootPath() }) {
+        if (p && *p) { std::string d = p; if (d.back() != '/') d += '/'; dirs.push_back(d); }
+    }
     if (!dataDir.empty()) {
         dirs.push_back(dataDir + "configs/");
         dirs.push_back(dataDir + "files/configs/");
@@ -86,16 +91,19 @@ static void LoadConfig() {
             }
             fclose(f);
             LOGI("config dibaca: %s", path.c_str());
+            g_status = "ini dibaca: " + path;
             return;
         }
     }
     for (auto& d : dirs) {                          // belum ada -> bikin
         std::string dd = d; if (!dd.empty() && dd.back() == '/') dd.pop_back();
-        mkdir(dd.c_str(), 0777);                    // bikin folder (mis. configs) kalau belum ada
+        aml->CreateDirRecursive(dd.c_str());        // bikin folder (mis. configs) kalau belum ada
+        mkdir(dd.c_str(), 0777);
         std::string path = d + "InteractivePeds.ini";
-        if (TryWrite(path)) { LOGI("config dibuat: %s", path.c_str()); return; }
+        if (TryWrite(path)) { LOGI("config dibuat: %s", path.c_str()); g_status = "ini dibuat: " + path; return; }
     }
     LOGE("gagal bikin InteractivePeds.ini di semua lokasi");
+    g_status = "GAGAL bikin ini (semua lokasi ditolak)";
 }
 
 // ---------------- Struct minimal ----------------
@@ -305,8 +313,14 @@ extern "C" void Chat_End() {
 }
 
 // ---------------- Entry ----------------
+// Pesan di layar: bukti mod ini kemuat. Dipanggil lagi setelah semua mod selesai (activity sudah siap).
+extern "C" void OnAllModsLoaded() {
+    aml->ShowToast(true, "InteractivePeds AKTIF | %s", g_status.c_str());
+}
+
 extern "C" void OnModLoad() {
     LoadConfig();
+    aml->ShowToast(false, "InteractivePeds dimuat");
     pGTASA = aml->GetLib("libGTASA.so"); hGTASA = aml->GetLibHandle("libGTASA.so");
     SET_TO(FindPlayerPed,   aml->GetSym(hGTASA, "_Z13FindPlayerPedi"));
     SET_TO(CalcScreenCoors, aml->GetSym(hGTASA, "_ZN7CSprite15CalcScreenCoorsERK7CVectorPS0_PfS3_bb"));
