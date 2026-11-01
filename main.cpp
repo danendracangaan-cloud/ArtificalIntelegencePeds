@@ -339,7 +339,7 @@ static void Report(const char* label, const char* found) { Mark(std::string(foun
 // Membaca tabel simbol libGTASA.so dari disk, lalu menulis yang berkaitan dengan input ke InteractivePeds_symbols.txt
 static void DumpSymbols(const char* lib, const char* outName, std::vector<const char*> kws) {
     std::string out = VIS_DIR + outName;
-    { FILE* t = fopen(out.c_str(), "r"); if (t) { fclose(t); return; } }          // sudah pernah dibuat
+    { FILE* t = fopen(out.c_str(), "r"); if (t) { fseek(t, 0, SEEK_END); long sz = ftell(t); fclose(t); if (sz > 1000) return; } }   // sudah berisi -> lewati
     std::string so;
     FILE* m = fopen("/proc/self/maps", "r"); char l[600];
     while (m && fgets(l, sizeof l, m)) {
@@ -348,11 +348,21 @@ static void DumpSymbols(const char* lib, const char* outName, std::vector<const 
     if (m) fclose(m);
     FILE* o = fopen(out.c_str(), "w"); if (!o) return;
     fprintf(o, "%s path: %s\n", lib, so.c_str());
-    FILE* f = so.empty() ? nullptr : fopen(so.c_str(), "rb");
-    Elf32_Ehdr eh;
-    if (!f || fread(&eh, sizeof eh, 1, f) != 1 || memcmp(eh.e_ident, ELFMAG, SELFMAG) != 0 || eh.e_shnum == 0 || eh.e_shnum > 200) {
-        fprintf(o, "GAGAL baca ELF (file tidak bisa dibuka / tidak ada section header)\n"); if (f) fclose(f); fclose(o); return;
+    // File di /data/user/0/... sering sudah dihapus loader ("(deleted)"); coba salinan asli di folder mods juga
+    size_t del = so.find(" (deleted)"); if (del != std::string::npos) so.erase(del);
+    std::vector<std::string> cands;
+    if (!so.empty()) cands.push_back(so);
+    cands.push_back(VIS_DIR + "mods/" + lib);
+    cands.push_back("/storage/emulated/0/Android/data/" + PKG + "/mods/" + lib);
+    FILE* f = nullptr; Elf32_Ehdr eh; bool okElf = false;
+    for (auto& c : cands) {
+        f = fopen(c.c_str(), "rb");
+        if (!f) { fprintf(o, "tidak bisa buka: %s\n", c.c_str()); continue; }
+        if (fread(&eh, sizeof eh, 1, f) == 1 && memcmp(eh.e_ident, ELFMAG, SELFMAG) == 0 && eh.e_shnum > 0 && eh.e_shnum <= 200) { okElf = true; fprintf(o, "dibaca dari: %s\n", c.c_str()); break; }
+        fprintf(o, "bukan ELF / tanpa section header: %s\n", c.c_str());
+        fclose(f); f = nullptr;
     }
+    if (!okElf) { fprintf(o, "GAGAL baca ELF dari semua lokasi\n"); fclose(o); return; }
     std::vector<Elf32_Shdr> sh(eh.e_shnum);
     fseek(f, eh.e_shoff, SEEK_SET);
     if (fread(sh.data(), sizeof(Elf32_Shdr), eh.e_shnum, f) != eh.e_shnum) { fprintf(o, "GAGAL baca section\n"); fclose(f); fclose(o); return; }
@@ -378,7 +388,13 @@ static void DumpSymbols(const char* lib, const char* outName, std::vector<const 
 
 // ============================ Entry AML ============================
 extern "C" void OnModPreLoad() { LoadConfig(); Mark("1. OnModPreLoad"); }
-extern "C" void OnAllModsLoaded() { Mark("5. OnAllModsLoaded"); }
+extern "C" void OnAllModsLoaded() {
+    Mark("5. OnAllModsLoaded");
+    // Mod multiplayer (libMP32.so) baru termuat SETELAH mod kita, jadi dicek di sini
+    std::thread([]() {
+        DumpSymbols("libMP32.so", "InteractivePeds_symbols_MP32.txt", {"Keyboard", "KeyBoard", "Chat", "Input", "Say", "Send", "Command", "Cmd", "Edit", "Key", "Text", "Message", "Msg"});
+    }).detach();
+}
 
 extern "C" void OnModLoad() {
     Mark("2. OnModLoad mulai (v0.5)");
@@ -408,8 +424,6 @@ extern "C" void OnModLoad() {
     Mark("3. hook dipasang: " + std::string(hud ? "YA" : "TIDAK"));
     std::thread([]() {
         DumpSymbols("libGTASA.so", "InteractivePeds_symbols.txt", {"Touch", "Keyboard", "KeyBoard", "AND_", "OS_", "Widget", "CPad", "RsGlobal"});
-        // mod multiplayer lu (libMP32.so): cari fungsi keyboard / chat yang bisa kita pinjam
-        DumpSymbols("libMP32.so", "InteractivePeds_symbols_MP32.txt", {"Keyboard", "KeyBoard", "Chat", "Input", "Say", "Send", "Command", "Cmd", "Edit", "Key", "Text", "Message", "Msg"});
     }).detach();
     Mark("4. OnModLoad selesai");
 }
