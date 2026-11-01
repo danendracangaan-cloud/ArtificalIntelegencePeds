@@ -242,7 +242,7 @@ static void SendChat(const std::string& said) {
             size_t nl = out.find('\n');
             if (nl != std::string::npos) { sscanf(out.substr(0, nl).c_str(), "%d,%d,%d", &r.dHappy, &r.dAnger, &r.dFear); r.text = out.substr(nl + 1); }
             else r.text = out;
-        } else { BrainRegistry tmp; r.text = tmp.offlineLine(snap, Act::None, said); }   // offline
+        } else { BrainRegistry tmp; r.text = tmp.offlineChat(snap, said, r.dHappy, r.dAnger, r.dFear); }   // offline cerdas
         std::lock_guard<std::mutex> g(qmx); replies.push(r);
     }).detach();
 }
