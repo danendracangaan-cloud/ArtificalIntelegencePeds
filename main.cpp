@@ -1,7 +1,9 @@
 // InteractivePeds - AML mod untuk GTA SA Android (armeabi-v7a, libGTASA.so v2.00)
 // Bagian [VERIFY] = harus lu cek sendiri dengan `nm -D libGTASA.so | grep <nama>` atau disassembler.
 #include <mod/amlmod.h>
-#include <mod/logger.h>
+#include <android/log.h>
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  "InteractivePeds", __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "InteractivePeds", __VA_ARGS__)
 #include <thread>
 #include <mutex>
 #include <queue>
@@ -225,7 +227,6 @@ extern "C" void Chat_End() {
 
 // ---------------- Entry ----------------
 extern "C" void OnModLoad() {
-    logger->SetTag("InteractivePeds");
     pGTASA = aml->GetLib("libGTASA.so"); hGTASA = aml->GetLibHandle("libGTASA.so");
     SET_TO(FindPlayerPed,   aml->GetSym(hGTASA, "_Z13FindPlayerPedi"));
     SET_TO(CalcScreenCoors, aml->GetSym(hGTASA, "_ZN7CSprite15CalcScreenCoorsERK7CVectorPS0_PfS3_bb"));
@@ -234,6 +235,6 @@ extern "C" void OnModLoad() {
     // Hook titik gambar HUD per-frame [VERIFY nama/offset]: contoh CHud::Draw
     void* hudDraw = (void*)aml->GetSym(hGTASA, "_ZN4CHud4DrawEv");
     if (hudDraw) aml->Hook(hudDraw, (void*)Render2D_hook, (void**)&Render2D_orig);
-    else logger->Error("CHud::Draw tidak ketemu - cek nama simbol");
-    logger->Info("InteractivePeds loaded");
+    else LOGE("CHud::Draw tidak ketemu - cek nama simbol");
+    LOGI("InteractivePeds loaded");
 }
