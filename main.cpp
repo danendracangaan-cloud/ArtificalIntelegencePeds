@@ -27,6 +27,7 @@ static std::string VIS_DIR;                       // folder yang bisa dibuka use
 static std::string PROXY_HOST = "192.168.1.10";
 static std::string PROXY_PORT = "8787";
 static float       TALK_RANGE = 2.5f;
+static int UseFontStyle = 0, UseFontScale = 0, UseFontColor = 0, UseFontRender = 0, DrawHudOn = 1;
 static const bool  ENABLE_CRIME = false;          // todong/copet: nyalakan setelah aksi ped selesai dibuat
 
 static void Mark(const std::string& line) {
@@ -47,7 +48,9 @@ static std::string GetPackageName() {
 static bool TryWrite(const std::string& path) {
     FILE* f = fopen(path.c_str(), "w");
     if (!f) return false;
-    fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n", PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE);
+    fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
+               "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n",
+            PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender);
     fclose(f);
     return true;
 }
@@ -57,7 +60,7 @@ static void LoadConfig() {
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
-    char line[256];
+    char line[256]; bool hasNew = false;
     while (fgets(line, sizeof line, f)) {
         char k[64], v[160];
         if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
@@ -65,9 +68,15 @@ static void LoadConfig() {
             if (key == "ProxyHost") PROXY_HOST = val;
             else if (key == "ProxyPort") PROXY_PORT = val;
             else if (key == "TalkRange") TALK_RANGE = (float)atof(val.c_str());
+            else if (key == "DrawHud")       DrawHudOn = atoi(val.c_str());
+            else if (key == "UseFontStyle")  { UseFontStyle  = atoi(val.c_str()); hasNew = true; }
+            else if (key == "UseFontScale")  UseFontScale  = atoi(val.c_str());
+            else if (key == "UseFontColor")  UseFontColor  = atoi(val.c_str());
+            else if (key == "UseFontRender") UseFontRender = atoi(val.c_str());
         }
     }
     fclose(f);
+    if (!hasNew) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
 }
 
 // ============================ Baca memori game dengan aman ============================
@@ -151,16 +160,30 @@ static void Act_PickpocketRun(void*) {}
 static void Act_FaceAndStop(void*) {}
 
 // ============================ Teks di layar (font bawaan game) ============================
+static int g_crumbs = 0;
+static void Crumb(const char* what) {          // jejak sebelum tiap panggilan font; kalau game crash, baris terakhir = pelakunya
+    if (g_crumbs >= 60) return;
+    g_crumbs++;
+    std::string f = VIS_DIR + "InteractivePeds_crumb.txt";
+    FILE* fp = fopen(f.c_str(), "a");
+    if (fp) { fprintf(fp, "%s\n", what); fclose(fp); }
+}
 static void DrawHud(const std::string& txt, int line) {
-    if (!Font_Print) return;
-    if (Font_SetStyleH) Font_SetStyleH(1);
-    if (Font_SetScale1) Font_SetScale1(0.9f); else if (Font_SetScale2) Font_SetScale2(0.9f, 1.8f);
-    if (Font_SetColor)  Font_SetColor(0xFF00DCFF);                   // kuning
+    if (!DrawHudOn || !Font_Print) return;
+    Crumb("draw: mulai");
+    if (UseFontStyle && Font_SetStyleH) { Crumb("draw: SetFontStyle"); Font_SetStyleH(1); }
+    if (UseFontScale) {
+        if (Font_SetScale1)      { Crumb("draw: SetScale(1)"); Font_SetScale1(0.9f); }
+        else if (Font_SetScale2) { Crumb("draw: SetScale(2)"); Font_SetScale2(0.9f, 1.8f); }
+    }
+    if (UseFontColor && Font_SetColor) { Crumb("draw: SetColor"); Font_SetColor(0xFF00DCFF); }
     uint16_t w[128]; size_t i = 0;
     for (; i < txt.size() && i < 127; i++) w[i] = (uint8_t)txt[i];
     w[i] = 0;
+    Crumb("draw: PrintString");
     Font_Print(60.f, 220.f + 34.f * line, w);
-    if (Font_Render) Font_Render();
+    Crumb("draw: PrintString selesai");
+    if (UseFontRender && Font_Render) { Crumb("draw: RenderFontBuffer"); Font_Render(); Crumb("draw: Render selesai"); }
 }
 
 // ============================ State obrolan ============================
