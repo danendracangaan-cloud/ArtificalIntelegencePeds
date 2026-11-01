@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <vector>
 #include <sys/stat.h>
+#include <dlfcn.h>
 #include "ped_brain.h"
 #include "net.h"
 
@@ -45,15 +46,30 @@ static bool TryWrite(const std::string& path) {
 static void LoadConfig() {
     std::string pkg = GetPackageName();
     LOGI("package: %s", pkg.c_str());
-    std::string base = "/storage/emulated/0/Android/data/" + pkg;
-    std::vector<std::string> dirs = {
-        base + "/configs/",
-        base + "/files/configs/",
-        "/storage/emulated/0/Android/data/" + pkg + "/files/",
-        "/sdcard/Android/data/" + pkg + "/files/",
-        "/storage/emulated/0/Android/data/" + pkg + "/mods/",
-        "/storage/emulated/0/Android/data/" + pkg + "/",
-    };
+    // Cari lokasi file .so kita sendiri (mis. .../Android_Unprotected/data/<pkg>/mods/libInteractivePeds.so)
+    std::string soDir, dataDir;
+    Dl_info info;
+    if (dladdr((void*)&LoadConfig, &info) && info.dli_fname) {
+        std::string p = info.dli_fname;
+        LOGI("lokasi .so: %s", p.c_str());
+        size_t k = p.find_last_of('/');
+        if (k != std::string::npos) soDir = p.substr(0, k + 1);          // .../mods/
+        const std::string tail = "/mods/";
+        if (soDir.size() > tail.size() && soDir.compare(soDir.size() - tail.size(), tail.size(), tail) == 0)
+            dataDir = soDir.substr(0, soDir.size() - tail.size() + 1);   // .../<pkg>/
+    }
+    std::vector<std::string> dirs;
+    if (!dataDir.empty()) {
+        dirs.push_back(dataDir + "configs/");
+        dirs.push_back(dataDir + "files/configs/");
+        dirs.push_back(dataDir + "files/");
+    }
+    if (!soDir.empty()) dirs.push_back(soDir);
+    for (std::string root : {"/storage/emulated/0/Android_Unprotected/data/", "/storage/emulated/0/Android/data/"}) {
+        dirs.push_back(root + pkg + "/configs/");
+        dirs.push_back(root + pkg + "/files/configs/");
+        dirs.push_back(root + pkg + "/files/");
+    }
     for (auto& d : dirs) {
         std::string path = d + "InteractivePeds.ini";
         FILE* f = fopen(path.c_str(), "r");
