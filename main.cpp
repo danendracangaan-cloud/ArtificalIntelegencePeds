@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <cstring>
+#include <elf.h>
 #include "ped_brain.h"
 #include "net.h"
 
@@ -332,6 +334,48 @@ static void Render2D_hook() {
 // ============================ Laporan simbol ============================
 static void Report(const char* label, const char* found) { Mark(std::string(found ? "ADA   : " : "TIDAK : ") + label + (found ? std::string(" -> ") + found : "")); }
 
+
+// ============================ Dump nama fungsi libGTASA (buat cari fungsi touch/keyboard) ============================
+// Membaca tabel simbol libGTASA.so dari disk, lalu menulis yang berkaitan dengan input ke InteractivePeds_symbols.txt
+static void DumpSymbols(const char* lib, const char* outName, std::vector<const char*> kws) {
+    std::string out = VIS_DIR + outName;
+    { FILE* t = fopen(out.c_str(), "r"); if (t) { fclose(t); return; } }          // sudah pernah dibuat
+    std::string so;
+    FILE* m = fopen("/proc/self/maps", "r"); char l[600];
+    while (m && fgets(l, sizeof l, m)) {
+        if (strstr(l, lib)) { char* p = strchr(l, '/'); if (p) { so = p; while (!so.empty() && (so.back() == '\n' || so.back() == ' ')) so.pop_back(); break; } }
+    }
+    if (m) fclose(m);
+    FILE* o = fopen(out.c_str(), "w"); if (!o) return;
+    fprintf(o, "%s path: %s\n", lib, so.c_str());
+    FILE* f = so.empty() ? nullptr : fopen(so.c_str(), "rb");
+    Elf32_Ehdr eh;
+    if (!f || fread(&eh, sizeof eh, 1, f) != 1 || memcmp(eh.e_ident, ELFMAG, SELFMAG) != 0 || eh.e_shnum == 0 || eh.e_shnum > 200) {
+        fprintf(o, "GAGAL baca ELF (file tidak bisa dibuka / tidak ada section header)\n"); if (f) fclose(f); fclose(o); return;
+    }
+    std::vector<Elf32_Shdr> sh(eh.e_shnum);
+    fseek(f, eh.e_shoff, SEEK_SET);
+    if (fread(sh.data(), sizeof(Elf32_Shdr), eh.e_shnum, f) != eh.e_shnum) { fprintf(o, "GAGAL baca section\n"); fclose(f); fclose(o); return; }
+    int total = 0, written = 0;
+    for (auto& s : sh) {
+        if (s.sh_type != SHT_DYNSYM || s.sh_link >= sh.size()) continue;
+        Elf32_Shdr& st = sh[s.sh_link];
+        std::vector<Elf32_Sym> syms(s.sh_size / sizeof(Elf32_Sym));
+        std::vector<char> str(st.sh_size + 1, 0);
+        fseek(f, s.sh_offset, SEEK_SET); if (fread(syms.data(), sizeof(Elf32_Sym), syms.size(), f) != syms.size()) break;
+        fseek(f, st.sh_offset, SEEK_SET); if (fread(str.data(), 1, st.sh_size, f) != st.sh_size) break;
+        for (auto& sy : syms) {
+            if (sy.st_shndx == SHN_UNDEF || sy.st_name >= st.sh_size) continue;
+            const char* n = &str[sy.st_name]; total++;
+            bool hit = false;
+            for (const char* k : kws) if (strstr(n, k)) { hit = true; break; }
+            if (hit && written++ < 4000) fprintf(o, "%s | +0x%x\n", n, (unsigned)sy.st_value);
+        }
+    }
+    fprintf(o, "TOTAL simbol: %d, ditulis: %d\n", total, written);
+    fclose(f); fclose(o);
+}
+
 // ============================ Entry AML ============================
 extern "C" void OnModPreLoad() { LoadConfig(); Mark("1. OnModPreLoad"); }
 extern "C" void OnAllModsLoaded() { Mark("5. OnAllModsLoaded"); }
@@ -362,5 +406,10 @@ extern "C" void OnModLoad() {
     uintptr_t hud = FirstSym({"_ZN4CHud4DrawEv"}, &nm);                             Report("CHud::Draw", nm);
     if (hud) aml->Hook((void*)hud, (void*)Render2D_hook, (void**)&Render2D_orig);
     Mark("3. hook dipasang: " + std::string(hud ? "YA" : "TIDAK"));
+    std::thread([]() {
+        DumpSymbols("libGTASA.so", "InteractivePeds_symbols.txt", {"Touch", "Keyboard", "KeyBoard", "AND_", "OS_", "Widget", "CPad", "RsGlobal"});
+        // mod multiplayer lu (libMP32.so): cari fungsi keyboard / chat yang bisa kita pinjam
+        DumpSymbols("libMP32.so", "InteractivePeds_symbols_MP32.txt", {"Keyboard", "KeyBoard", "Chat", "Input", "Say", "Send", "Command", "Cmd", "Edit", "Key", "Text", "Message", "Msg"});
+    }).detach();
     Mark("4. OnModLoad selesai");
 }
