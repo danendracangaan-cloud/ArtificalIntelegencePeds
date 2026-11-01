@@ -9,15 +9,44 @@
 #include <queue>
 #include <cmath>
 #include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include "ped_brain.h"
 #include "net.h"
 
 MYMOD(net.interactiveped, InteractivePeds, 1.0, you)
 
 // ---------------- Config ----------------
-static const char* PROXY_HOST = "192.168.1.10";   // IP PC/VPS yang jalanin server/proxy.py
-static const char* PROXY_PORT = "8787";
-static const float TALK_RANGE = 2.5f;
+static std::string PROXY_HOST = "192.168.1.10";   // IP PC/VPS yang jalanin proxy.py (bisa diubah lewat file .ini)
+static std::string PROXY_PORT = "8787";
+static float TALK_RANGE = 2.5f;
+static const char* INI_PATH = "/storage/emulated/0/Android/data/com.rockstargames.gtasa/files/InteractivePeds.ini";
+
+// Baca config; kalau file belum ada, bikin otomatis dengan isi default.
+static void LoadConfig() {
+    FILE* f = fopen(INI_PATH, "r");
+    if (!f) {
+        f = fopen(INI_PATH, "w");
+        if (f) {
+            fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n",
+                    PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE);
+            fclose(f);
+            LOGI("InteractivePeds.ini dibuat");
+        } else LOGE("Gagal bikin InteractivePeds.ini");
+        return;
+    }
+    char line[256];
+    while (fgets(line, sizeof line, f)) {
+        char k[64], v[160];
+        if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
+            std::string key = k, val = v;
+            if (key == "ProxyHost") PROXY_HOST = val;
+            else if (key == "ProxyPort") PROXY_PORT = val;
+            else if (key == "TalkRange") TALK_RANGE = (float)atof(val.c_str());
+        }
+    }
+    fclose(f);
+}
 
 // ---------------- Struct minimal ----------------
 struct CVector { float x, y, z; };
@@ -227,6 +256,7 @@ extern "C" void Chat_End() {
 
 // ---------------- Entry ----------------
 extern "C" void OnModLoad() {
+    LoadConfig();
     pGTASA = aml->GetLib("libGTASA.so"); hGTASA = aml->GetLibHandle("libGTASA.so");
     SET_TO(FindPlayerPed,   aml->GetSym(hGTASA, "_Z13FindPlayerPedi"));
     SET_TO(CalcScreenCoors, aml->GetSym(hGTASA, "_ZN7CSprite15CalcScreenCoorsERK7CVectorPS0_PfS3_bb"));
