@@ -73,6 +73,14 @@ static void LoadConfig() {
             dataDir = soDir.substr(0, soDir.size() - tail.size() + 1);   // .../<pkg>/
     }
     std::vector<std::string> dirs;
+    // Folder yang bisa dibuka lewat ZArchiver/QuickEdit: ini selalu dibuat & dibaca dari sini dulu
+    {
+        std::string vis = "/storage/emulated/0/Android_Unprotected/data/" + pkg + "/";
+        std::string visIni = vis + "InteractivePeds.ini";
+        FILE* t = fopen(visIni.c_str(), "r");
+        if (t) fclose(t); else TryWrite(visIni);
+        dirs.push_back(vis);
+    }
     // Lokasi resmi dari AML sendiri (sama seperti yang dipakai mod lain, mis. Natural Disaster)
     for (const char* p : { aml->GetConfigPath(), aml->GetAndroidDataPath() }) {
         if (p && *p) { std::string d = p; if (d.back() != '/') d += '/'; dirs.push_back(d); }
@@ -325,6 +333,30 @@ extern "C" void Chat_End() {
     ui = UI::Idle; inputBuf.clear();
 }
 
+
+// Cek simbol apa saja yang ada di libGTASA.so lu; hasilnya ditulis ke InteractivePeds_FULL.txt
+static void ReportSymbols() {
+    const char* names[] = {
+        "_Z13FindPlayerPedi",
+        "_ZN6CPools11ms_pPedPoolE",
+        "_ZN6CWorld7PlayersE",
+        "_ZN6CTimer12ms_fTimeStepE",
+        "_ZN6CClock18ms_nGameClockHoursE",
+        "_ZN7CSprite15CalcScreenCoorsERK7CVectorPS0_PfS3_bb",
+        "_ZN5CFont11PrintStringEffPt",
+        "_ZN5CFont8SetScaleEff",
+        "_ZN5CFont11SetFontStyleEs",
+        "_ZN5CFont8SetColorE5CRGBA",
+        "_ZN4CHud4DrawEv",
+        "_ZN4CPed10GiveWeaponE11eWeaponTypejb",
+    };
+    for (const char* n : names) {
+        uintptr_t a = aml->GetSym(hGTASA, n);
+        std::string line = std::string(a ? "SIMBOL ADA    : " : "SIMBOL TIDAK  : ") + n;
+        Mark(line.c_str());
+    }
+}
+
 // ---------------- Entry ----------------
 // Pesan di layar: bukti mod ini kemuat. Dipanggil lagi setelah semua mod selesai (activity sudah siap).
 extern "C" void OnModPreLoad() { Mark("1. OnModPreLoad"); }
@@ -349,5 +381,6 @@ extern "C" void OnModLoad() {
     if (hudDraw) aml->Hook(hudDraw, (void*)Render2D_hook, (void**)&Render2D_orig);
     else LOGE("CHud::Draw tidak ketemu - cek nama simbol");
     LOGI("InteractivePeds loaded");
+    ReportSymbols();
     Mark("4. OnModLoad selesai");
 }
