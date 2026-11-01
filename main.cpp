@@ -61,7 +61,7 @@ static void LoadConfig() {
     }
     std::vector<std::string> dirs;
     // Lokasi resmi dari AML sendiri (sama seperti yang dipakai mod lain, mis. Natural Disaster)
-    for (const char* p : { aml->GetConfigPath(), aml->GetAndroidDataPath(), aml->GetAndroidDataRootPath() }) {
+    for (const char* p : { aml->GetConfigPath(), aml->GetAndroidDataPath() }) {
         if (p && *p) { std::string d = p; if (d.back() != '/') d += '/'; dirs.push_back(d); }
     }
     if (!dataDir.empty()) {
@@ -97,7 +97,6 @@ static void LoadConfig() {
     }
     for (auto& d : dirs) {                          // belum ada -> bikin
         std::string dd = d; if (!dd.empty() && dd.back() == '/') dd.pop_back();
-        aml->CreateDirRecursive(dd.c_str());        // bikin folder (mis. configs) kalau belum ada
         mkdir(dd.c_str(), 0777);
         std::string path = d + "InteractivePeds.ini";
         if (TryWrite(path)) { LOGI("config dibuat: %s", path.c_str()); g_status = "ini dibuat: " + path; return; }
