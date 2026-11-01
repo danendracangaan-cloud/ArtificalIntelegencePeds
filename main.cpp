@@ -232,7 +232,7 @@ extern "C" void OnModLoad() {
     SET_TO(Font_Print,      aml->GetSym(hGTASA, "_ZN5CFont11PrintStringEffPt"));
     SET_TO(Font_SetScale,   aml->GetSym(hGTASA, "_ZN5CFont8SetScaleEff"));
     // Hook titik gambar HUD per-frame [VERIFY nama/offset]: contoh CHud::Draw
-    void* hudDraw = aml->GetSym(hGTASA, "_ZN4CHud4DrawEv");
+    void* hudDraw = (void*)aml->GetSym(hGTASA, "_ZN4CHud4DrawEv");
     if (hudDraw) aml->Hook(hudDraw, (void*)Render2D_hook, (void**)&Render2D_orig);
     else logger->Error("CHud::Draw tidak ketemu - cek nama simbol");
     logger->Info("InteractivePeds loaded");
