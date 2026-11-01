@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
+#include <sys/stat.h>
 #include "ped_brain.h"
 #include "net.h"
 
@@ -20,32 +22,64 @@ MYMOD(net.interactiveped, InteractivePeds, 1.0, you)
 static std::string PROXY_HOST = "192.168.1.10";   // IP PC/VPS yang jalanin proxy.py (bisa diubah lewat file .ini)
 static std::string PROXY_PORT = "8787";
 static float TALK_RANGE = 2.5f;
-static const char* INI_PATH = "/storage/emulated/0/Android/data/com.rockstargames.gtasa/files/InteractivePeds.ini";
 
-// Baca config; kalau file belum ada, bikin otomatis dengan isi default.
+// Nama paket asli game (dibaca dari proses sendiri, jadi aman walau APK hasil repack)
+static std::string GetPackageName() {
+    char buf[256] = {0};
+    FILE* f = fopen("/proc/self/cmdline", "r");
+    if (f) { fread(buf, 1, sizeof buf - 1, f); fclose(f); }
+    std::string p = buf;
+    return p.empty() ? "com.rockstargames.gtasa" : p;
+}
+
+static bool TryWrite(const std::string& path) {
+    FILE* f = fopen(path.c_str(), "w");
+    if (!f) return false;
+    fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n",
+            PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE);
+    fclose(f);
+    return true;
+}
+
+// Baca config; kalau file belum ada, bikin otomatis (coba beberapa lokasi).
 static void LoadConfig() {
-    FILE* f = fopen(INI_PATH, "r");
-    if (!f) {
-        f = fopen(INI_PATH, "w");
-        if (f) {
-            fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n",
-                    PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE);
+    std::string pkg = GetPackageName();
+    LOGI("package: %s", pkg.c_str());
+    std::string base = "/storage/emulated/0/Android/data/" + pkg;
+    std::vector<std::string> dirs = {
+        base + "/configs/",
+        base + "/files/configs/",
+        "/storage/emulated/0/Android/data/" + pkg + "/files/",
+        "/sdcard/Android/data/" + pkg + "/files/",
+        "/storage/emulated/0/Android/data/" + pkg + "/mods/",
+        "/storage/emulated/0/Android/data/" + pkg + "/",
+    };
+    for (auto& d : dirs) {
+        std::string path = d + "InteractivePeds.ini";
+        FILE* f = fopen(path.c_str(), "r");
+        if (f) {                                    // ketemu -> baca
+            char line[256];
+            while (fgets(line, sizeof line, f)) {
+                char k[64], v[160];
+                if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
+                    std::string key = k, val = v;
+                    if (key == "ProxyHost") PROXY_HOST = val;
+                    else if (key == "ProxyPort") PROXY_PORT = val;
+                    else if (key == "TalkRange") TALK_RANGE = (float)atof(val.c_str());
+                }
+            }
             fclose(f);
-            LOGI("InteractivePeds.ini dibuat");
-        } else LOGE("Gagal bikin InteractivePeds.ini");
-        return;
-    }
-    char line[256];
-    while (fgets(line, sizeof line, f)) {
-        char k[64], v[160];
-        if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
-            std::string key = k, val = v;
-            if (key == "ProxyHost") PROXY_HOST = val;
-            else if (key == "ProxyPort") PROXY_PORT = val;
-            else if (key == "TalkRange") TALK_RANGE = (float)atof(val.c_str());
+            LOGI("config dibaca: %s", path.c_str());
+            return;
         }
     }
-    fclose(f);
+    for (auto& d : dirs) {                          // belum ada -> bikin
+        std::string dd = d; if (!dd.empty() && dd.back() == '/') dd.pop_back();
+        mkdir(dd.c_str(), 0777);                    // bikin folder (mis. configs) kalau belum ada
+        std::string path = d + "InteractivePeds.ini";
+        if (TryWrite(path)) { LOGI("config dibuat: %s", path.c_str()); return; }
+    }
+    LOGE("gagal bikin InteractivePeds.ini di semua lokasi");
 }
 
 // ---------------- Struct minimal ----------------
