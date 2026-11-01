@@ -28,6 +28,10 @@ static std::string PROXY_HOST = "192.168.1.10";
 static std::string PROXY_PORT = "8787";
 static float       TALK_RANGE = 2.5f;
 static int UseFontStyle = 0, UseFontScale = 0, UseFontColor = 0, UseFontRender = 0, DrawHudOn = 1;
+static float HudX = 60.f, HudY = 220.f, HudLine = 34.f, HudScale = 0.9f;
+static int   UseFontOrient = 1, FontOrient = 1;     // FontOrient: 0=tengah, 1=kiri, 2=kanan
+static int   HudAuto = 1, UseFontWrap = 1;          // HudAuto: posisi teks otomatis dari ukuran layar
+static int   g_scrW = 0, g_scrH = 0;
 static const bool  ENABLE_CRIME = false;          // todong/copet: nyalakan setelah aksi ped selesai dibuat
 
 static void Mark(const std::string& line) {
@@ -49,14 +53,17 @@ static bool TryWrite(const std::string& path) {
     FILE* f = fopen(path.c_str(), "w");
     if (!f) return false;
     fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
-               "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n",
-            PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender);
+               "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n"
+               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\n",
+            PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender,
+            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap);
     fclose(f);
     return true;
 }
 static void LoadConfig() {
     PKG = GetPackageName();
     VIS_DIR = "/storage/emulated/0/Android_Unprotected/data/" + PKG + "/";
+    { std::string ct = VIS_DIR + "chat.txt"; FILE* t = fopen(ct.c_str(), "r"); if (t) fclose(t); else { t = fopen(ct.c_str(), "w"); if (t) fclose(t); } }
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
@@ -69,7 +76,15 @@ static void LoadConfig() {
             else if (key == "ProxyPort") PROXY_PORT = val;
             else if (key == "TalkRange") TALK_RANGE = (float)atof(val.c_str());
             else if (key == "DrawHud")       DrawHudOn = atoi(val.c_str());
-            else if (key == "UseFontStyle")  { UseFontStyle  = atoi(val.c_str()); hasNew = true; }
+            else if (key == "UseFontStyle")  UseFontStyle  = atoi(val.c_str());
+            else if (key == "HudX")          HudX = (float)atof(val.c_str());
+            else if (key == "HudAuto")       { HudAuto = atoi(val.c_str()); hasNew = true; }
+            else if (key == "UseFontWrap")   UseFontWrap = atoi(val.c_str());
+            else if (key == "HudY")          HudY = (float)atof(val.c_str());
+            else if (key == "HudLine")       HudLine = (float)atof(val.c_str());
+            else if (key == "HudScale")      HudScale = (float)atof(val.c_str());
+            else if (key == "UseFontOrient") UseFontOrient = atoi(val.c_str());
+            else if (key == "FontOrient")    FontOrient = atoi(val.c_str());
             else if (key == "UseFontScale")  UseFontScale  = atoi(val.c_str());
             else if (key == "UseFontColor")  UseFontColor  = atoi(val.c_str());
             else if (key == "UseFontRender") UseFontRender = atoi(val.c_str());
@@ -101,6 +116,9 @@ static void  (*Font_SetScale2)(float, float);
 static void  (*Font_SetStyleH)(uint8_t);
 static void  (*Font_SetColor)(uint32_t);     // CRGBA 4 byte, dioper lewat register
 static void  (*Font_Render)();
+static void  (*Font_SetOrient)(int);
+static void  (*Font_SetWrapx)(float);
+static uintptr_t symRsGlobal;
 static void* (*Pools_GetPed)(int);
 static uintptr_t symPedPool, symTimeStep, symClockHours;
 static void  (*Render2D_orig)();
@@ -173,15 +191,23 @@ static void DrawHud(const std::string& txt, int line) {
     Crumb("draw: mulai");
     if (UseFontStyle && Font_SetStyleH) { Crumb("draw: SetFontStyle"); Font_SetStyleH(1); }
     if (UseFontScale) {
-        if (Font_SetScale1)      { Crumb("draw: SetScale(1)"); Font_SetScale1(0.9f); }
-        else if (Font_SetScale2) { Crumb("draw: SetScale(2)"); Font_SetScale2(0.9f, 1.8f); }
+        if (Font_SetScale1)      { Crumb("draw: SetScale(1)"); Font_SetScale1(HudScale); }
+        else if (Font_SetScale2) { Crumb("draw: SetScale(2)"); Font_SetScale2(HudScale, HudScale * 2.f); }
     }
+    bool left = UseFontOrient && Font_SetOrient;
+    if (left) { Crumb("draw: SetOrientation"); Font_SetOrient(FontOrient); }
+    if (UseFontWrap && Font_SetWrapx) { Crumb("draw: SetWrapx"); Font_SetWrapx(g_scrW > 0 ? (float)g_scrW : 3000.f); }
     if (UseFontColor && Font_SetColor) { Crumb("draw: SetColor"); Font_SetColor(0xFF00DCFF); }
     uint16_t w[128]; size_t i = 0;
     for (; i < txt.size() && i < 127; i++) w[i] = (uint8_t)txt[i];
     w[i] = 0;
+    float x = HudX, y = HudY + HudLine * line;
+    if (HudAuto && g_scrW > 0 && g_scrH > 0) {                        // posisi otomatis dari ukuran layar
+        x = left && FontOrient == 1 ? g_scrW * 0.04f : g_scrW * 0.5f;  // rata kiri -> pinggir kiri; selain itu -> tengah
+        y = g_scrH * 0.62f + g_scrH * 0.05f * line;
+    }
     Crumb("draw: PrintString");
-    Font_Print(60.f, 220.f + 34.f * line, w);
+    Font_Print(x, y, w);
     Crumb("draw: PrintString selesai");
     if (UseFontRender && Font_Render) { Crumb("draw: RenderFontBuffer"); Font_Render(); Crumb("draw: Render selesai"); }
 }
@@ -321,6 +347,14 @@ extern "C" void OnModLoad() {
     SET_TO(Font_SetStyleH,FirstSym({"_ZN5CFont11SetFontStyleEh", "_ZN5CFont11SetFontStyleEs"}, &nm)); Report("CFont::SetFontStyle", nm); nm = nullptr;
     SET_TO(Font_SetColor, FirstSym({"_ZN5CFont8SetColorE5CRGBA"}, &nm));            Report("CFont::SetColor", nm); nm = nullptr;
     SET_TO(Font_Render,   FirstSym({"_ZN5CFont16RenderFontBufferEv"}, &nm));        Report("CFont::RenderFontBuffer", nm); nm = nullptr;
+    SET_TO(Font_SetOrient,FirstSym({"_ZN5CFont14SetOrientationEh", "_ZN5CFont14SetOrientationEi", "_ZN5CFont14SetOrientationE14eFontAlignment", "_ZN5CFont14SetOrientationEs"}, &nm)); Report("CFont::SetOrientation", nm); nm = nullptr;
+    SET_TO(Font_SetWrapx, FirstSym({"_ZN5CFont8SetWrapxEf"}, &nm));                Report("CFont::SetWrapx", nm); nm = nullptr;
+    symRsGlobal = FirstSym({"RsGlobal"}, &nm);                                      Report("RsGlobal", nm); nm = nullptr;
+    if (symRsGlobal) {
+        uint32_t w = 0, h = 0;
+        if (SafeRead((void*)(symRsGlobal + 8), &w, 4) && SafeRead((void*)(symRsGlobal + 12), &h, 4) && w >= 300 && w <= 10000 && h >= 200 && h <= 10000) { g_scrW = (int)w; g_scrH = (int)h; }
+        Mark("layar: " + std::to_string(g_scrW) + "x" + std::to_string(g_scrH) + (g_scrW ? "" : " (tidak terbaca, pakai HudX/HudY)"));
+    }
     SET_TO(Pools_GetPed,  FirstSym({"_ZN6CPools6GetPedEi"}, &nm));                  Report("CPools::GetPed", nm); nm = nullptr;
     symPedPool    = FirstSym({"_ZN6CPools11ms_pPedPoolE"}, &nm);                    Report("CPools::ms_pPedPool", nm); nm = nullptr;
     symTimeStep   = FirstSym({"_ZN6CTimer12ms_fTimeStepE"}, &nm);                   Report("CTimer::ms_fTimeStep", nm); nm = nullptr;
