@@ -32,6 +32,7 @@ static float       TALK_RANGE = 2.5f;
 static int UseFontStyle = 0, UseFontScale = 0, UseFontColor = 0, UseFontRender = 0, DrawHudOn = 1;
 static float HudX = 60.f, HudY = 220.f, HudLine = 34.f, HudScale = 0.9f;
 static int   UseFontOrient = 1, FontOrient = 1;     // FontOrient: 0=tengah, 1=kiri, 2=kanan
+static float HudYFrac = 0.28f;                           // 0.0 = atas layar, 1.0 = bawah (default di atas biar nggak ketutup keyboard)
 static int   UseMPKeyboard = 1, AutoOpenKeyboard = 1;   // pinjam keyboard dari libMP32.so
 static int   HudAuto = 1, UseFontWrap = 1;          // HudAuto: posisi teks otomatis dari ukuran layar
 static int   g_scrW = 0, g_scrH = 0;
@@ -57,9 +58,9 @@ static bool TryWrite(const std::string& path) {
     if (!f) return false;
     fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
                "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n"
-               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nAutoOpenKeyboard=%d\n",
+               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nAutoOpenKeyboard=%d\nHudYFrac=%.2f\n",
             PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender,
-            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard);
+            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac);
     fclose(f);
     return true;
 }
@@ -70,7 +71,7 @@ static void LoadConfig() {
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
-    char line[256]; bool hasNew = false, hasKb = false;
+    char line[256]; bool hasNew = false, hasKb = false, hasY = false;
     while (fgets(line, sizeof line, f)) {
         char k[64], v[160];
         if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
@@ -85,6 +86,7 @@ static void LoadConfig() {
             else if (key == "UseFontWrap")   UseFontWrap = atoi(val.c_str());
             else if (key == "UseMPKeyboard")    { UseMPKeyboard = atoi(val.c_str()); hasKb = true; }
             else if (key == "AutoOpenKeyboard") AutoOpenKeyboard = atoi(val.c_str());
+            else if (key == "HudYFrac")         { HudYFrac = (float)atof(val.c_str()); hasY = true; }
             else if (key == "HudY")          HudY = (float)atof(val.c_str());
             else if (key == "HudLine")       HudLine = (float)atof(val.c_str());
             else if (key == "HudScale")      HudScale = (float)atof(val.c_str());
@@ -96,7 +98,7 @@ static void LoadConfig() {
         }
     }
     fclose(f);
-    if (!hasNew || !hasKb) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
+    if (!hasNew || !hasKb || !hasY) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
 }
 
 // ============================ Baca memori game dengan aman ============================
@@ -234,7 +236,7 @@ static void DrawHud(const std::string& txt, int line) {
     float x = HudX, y = HudY + HudLine * line;
     if (HudAuto && g_scrW > 0 && g_scrH > 0) {                        // posisi otomatis dari ukuran layar
         x = left && FontOrient == 1 ? g_scrW * 0.04f : g_scrW * 0.5f;  // rata kiri -> pinggir kiri; selain itu -> tengah
-        y = g_scrH * 0.62f + g_scrH * 0.05f * line;
+        y = g_scrH * HudYFrac + g_scrH * 0.05f * line;
     }
     Crumb("draw: PrintString");
     Font_Print(x, y, w);
@@ -466,11 +468,11 @@ static void Render2D_hook() {
 
     // gambar (teks panjang dipecah jadi beberapa baris)
     int line = 0;
-    if (canTalk && !g_kbOpen && bubbleTime <= 0) DrawHud("[ CHAT ]", line++);
+    if (canTalk) DrawHud("[ CHAT ]", line++);                        // selalu tampil selama dekat ped
     if (bubbleTime > 0) {
         std::vector<std::string> ls = WrapText(bubbleText, 48);
         for (size_t i = 0; i < ls.size() && i < 5; i++) DrawHud(ls[i], line++);
-        bubbleTime -= dt;
+        if (!canTalk) bubbleTime -= dt;                              // selama masih dekat, teks terakhir tetap tampil
     }
 
     // log bukti (dibatasi supaya file nggak membengkak)
