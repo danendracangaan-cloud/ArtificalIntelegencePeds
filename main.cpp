@@ -12,6 +12,7 @@
 #include <vector>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <dlfcn.h>
 #include <cstring>
 #include <elf.h>
@@ -33,7 +34,8 @@ static int UseFontStyle = 0, UseFontScale = 0, UseFontColor = 0, UseFontRender =
 static float HudX = 60.f, HudY = 220.f, HudLine = 34.f, HudScale = 0.9f;
 static int   UseFontOrient = 1, FontOrient = 1;     // FontOrient: 0=tengah, 1=kiri, 2=kanan
 static float HudYFrac = 0.28f;                           // 0.0 = atas layar, 1.0 = bawah (default di atas biar nggak ketutup keyboard)
-static int   UseMPKeyboard = 1, AutoOpenKeyboard = 1;   // pinjam keyboard dari libMP32.so
+static int   UseMPKeyboard = 1, AutoOpenKeyboard = 0;      // AutoOpenKeyboard=0: keyboard dibuka manual lewat tombol chat
+static int   UseMPChatTrigger = 1, PassChatToMP = 0, DrawBeforeHud = 1;   // pinjam keyboard dari libMP32.so
 static int   HudAuto = 1, UseFontWrap = 1;          // HudAuto: posisi teks otomatis dari ukuran layar
 static int   g_scrW = 0, g_scrH = 0;
 static const bool  ENABLE_CRIME = false;          // todong/copet: nyalakan setelah aksi ped selesai dibuat
@@ -58,9 +60,9 @@ static bool TryWrite(const std::string& path) {
     if (!f) return false;
     fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
                "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n"
-               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nAutoOpenKeyboard=%d\nHudYFrac=%.2f\n",
+               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nKeyboardAuto=%d\nHudYFrac=%.2f\nUseMPChatTrigger=%d\nPassChatToMP=%d\nDrawBeforeHud=%d\n",
             PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender,
-            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac);
+            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac, UseMPChatTrigger, PassChatToMP, DrawBeforeHud);
     fclose(f);
     return true;
 }
@@ -71,7 +73,7 @@ static void LoadConfig() {
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
-    char line[256]; bool hasNew = false, hasKb = false, hasY = false;
+    char line[256]; bool hasNew = false, hasKb = false, hasY = false, hasTrig = false;
     while (fgets(line, sizeof line, f)) {
         char k[64], v[160];
         if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
@@ -85,7 +87,10 @@ static void LoadConfig() {
             else if (key == "HudAuto")       { HudAuto = atoi(val.c_str()); hasNew = true; }
             else if (key == "UseFontWrap")   UseFontWrap = atoi(val.c_str());
             else if (key == "UseMPKeyboard")    { UseMPKeyboard = atoi(val.c_str()); hasKb = true; }
-            else if (key == "AutoOpenKeyboard") AutoOpenKeyboard = atoi(val.c_str());
+            else if (key == "KeyboardAuto")     AutoOpenKeyboard = atoi(val.c_str());
+            else if (key == "UseMPChatTrigger") { UseMPChatTrigger = atoi(val.c_str()); hasTrig = true; }
+            else if (key == "PassChatToMP")     PassChatToMP = atoi(val.c_str());
+            else if (key == "DrawBeforeHud")    DrawBeforeHud = atoi(val.c_str());
             else if (key == "HudYFrac")         { HudYFrac = (float)atof(val.c_str()); hasY = true; }
             else if (key == "HudY")          HudY = (float)atof(val.c_str());
             else if (key == "HudLine")       HudLine = (float)atof(val.c_str());
@@ -98,7 +103,7 @@ static void LoadConfig() {
         }
     }
     fclose(f);
-    if (!hasNew || !hasKb || !hasY) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
+    if (!hasNew || !hasKb || !hasY || !hasTrig) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
 }
 
 // ============================ Baca memori game dengan aman ============================
@@ -106,9 +111,19 @@ static void LoadConfig() {
 static bool SafeRead(const void* src, void* dst, size_t n) {
     static int fds[2] = {-1, -1};
     if ((uintptr_t)src < 0x10000 || n == 0 || n > 4096) return false;
-    if (fds[0] < 0 && pipe(fds) != 0) return false;
-    if (write(fds[1], src, n) != (ssize_t)n) return false;
-    return read(fds[0], dst, n) == (ssize_t)n;
+    if (fds[0] < 0) {
+        if (pipe(fds) != 0) return false;
+        for (int i = 0; i < 2; i++) fcntl(fds[i], F_SETFL, fcntl(fds[i], F_GETFL) | O_NONBLOCK);   // jangan pernah nge-hang
+    }
+    ssize_t w = write(fds[1], src, n);
+    if (w != (ssize_t)n) {                                           // gagal/sebagian: kuras sisa di pipe supaya bacaan berikutnya tidak korup
+        char tmp[4096];
+        while (read(fds[0], tmp, sizeof tmp) > 0) {}
+        return false;
+    }
+    ssize_t r = read(fds[0], dst, n);
+    if (r != (ssize_t)n) { char tmp[4096]; while (read(fds[0], tmp, sizeof tmp) > 0) {} return false; }
+    return true;
 }
 
 struct CVector { float x, y, z; };
@@ -351,11 +366,27 @@ static void OnKeyboardDone(const char* text, void*) {          // dipanggil mod 
     if (text && *text) kbSaid = std::string(text).substr(0, 180); else kbCancelled = true;
     kbDone = true;
 }
+static volatile bool g_nearTalk = false;                             // true saat player cukup dekat ped untuk ngobrol
+static int (*MP_SendChat_orig)(const char*);
+static bool g_mpHooked = false;
+// Player menekan tombol chat milik mod MP, ngetik, kirim -> MP::SendChat dipanggil. Kalau lagi dekat ped, teksnya kita ambil.
+static int MP_SendChat_hook(const char* text) {
+    if (UseMPChatTrigger && g_nearTalk && text && *text && text[0] != '/') {
+        OnKeyboardDone(text, nullptr);
+        if (!PassChatToMP) return 1;                                 // jangan diteruskan ke chat/server MP
+    }
+    return MP_SendChat_orig ? MP_SendChat_orig(text) : 0;
+}
 static void ResolveMPKeyboard() {
-    if (VK_Open) return;
+    if (VK_Open && (g_mpHooked || !UseMPChatTrigger)) return;        // semua sudah siap
     void* h = aml->GetLibHandle("libMP32.so");
     if (!h) h = dlopen("libMP32.so", RTLD_NOW | RTLD_NOLOAD);
     if (!h) { Mark("MP32: library tidak ditemukan (keyboard pinjaman mati)"); return; }
+    if (!g_mpHooked && UseMPChatTrigger) {
+        uintptr_t sc = aml->GetSym(h, "_ZN2MP8SendChatEPKc");
+        Mark(std::string("MP::SendChat: ") + (sc ? "ADA (di-hook sebagai trigger tombol chat)" : "TIDAK ADA"));
+        if (sc) { aml->Hook((void*)sc, (void*)MP_SendChat_hook, (void**)&MP_SendChat_orig); g_mpHooked = true; }
+    }
     uintptr_t a = aml->GetSym(h, "_ZN9VKeyboard4OpenEPKcS1_iPFvS1_PvES2_b");
     uintptr_t b = aml->GetSym(h, "_ZN9VKeyboard6IsOpenEv");
     uintptr_t c = aml->GetSym(h, "_ZN9VKeyboard5CloseEv");
@@ -373,8 +404,7 @@ static void EndTalk() {                                              // obrolan 
     talkPed = nullptr;
 }
 
-static void Render2D_hook() {
-    Render2D_orig();                                                 // HUD asli dulu
+static void FrameLogic() {
     g_frame++;
     float dt = Game_DT();
     brain.tick(dt);
@@ -417,6 +447,7 @@ static void Render2D_hook() {
     }
 
     bool canTalk = target && tdist < (locked ? TALK_RANGE + 3.f : TALK_RANGE);
+    g_nearTalk = canTalk;
     if (canTalk && talkPed != target) {                              // mulai ngobrol dengan ped baru
         EndTalk();
         talkPed = target; talkId = (uint32_t)(uintptr_t)target;
@@ -429,7 +460,8 @@ static void Render2D_hook() {
 
     // keyboard in-game (pinjam dari libMP32.so)
     if (UseMPKeyboard) {
-        if (!VK_Open) ResolveMPKeyboard();
+        static int resolveTries = 0;
+        if ((!VK_Open || !g_mpHooked) && g_frame % 300 == 1 && resolveTries++ < 6) ResolveMPKeyboard();
         if (VK_Open && VK_IsOpen) {
             KbCrumb("kb: IsOpen"); bool kbOpen = VK_IsOpen(); g_kbOpen = kbOpen;
             { std::lock_guard<std::mutex> g(kbMx);
@@ -468,7 +500,7 @@ static void Render2D_hook() {
 
     // gambar (teks panjang dipecah jadi beberapa baris)
     int line = 0;
-    if (canTalk) DrawHud("[ CHAT ]", line++);                        // selalu tampil selama dekat ped
+    if (canTalk) DrawHud(AutoOpenKeyboard ? "[ CHAT ]" : "[ CHAT ]  tekan tombol chat", line++);   // selalu tampil selama dekat ped
     if (bubbleTime > 0) {
         std::vector<std::string> ls = WrapText(bubbleText, 48);
         for (size_t i = 0; i < ls.size() && i < 5; i++) DrawHud(ls[i], line++);
@@ -482,6 +514,12 @@ static void Render2D_hook() {
                               g_frame, pp.x, pp.y, pp.z, (int)g_peds.size(), best > 1e8f ? -1.f : best, Game_Hour());
         Mark(b);
     }
+}
+
+static void Render2D_hook() {
+    // DrawBeforeHud=1: gambar teks kita SEBELUM HUD game, saat setelan font masih standar (supaya tampilan font tetap sama).
+    if (DrawBeforeHud) { FrameLogic(); Render2D_orig(); }
+    else               { Render2D_orig(); FrameLogic(); }
 }
 
 // ============================ Laporan simbol ============================
