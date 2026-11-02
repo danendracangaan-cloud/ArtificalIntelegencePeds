@@ -32,6 +32,7 @@ static float       TALK_RANGE = 2.5f;
 static int UseFontStyle = 0, UseFontScale = 0, UseFontColor = 0, UseFontRender = 0, DrawHudOn = 1;
 static float HudX = 60.f, HudY = 220.f, HudLine = 34.f, HudScale = 0.9f;
 static int   UseFontOrient = 1, FontOrient = 1;     // FontOrient: 0=tengah, 1=kiri, 2=kanan
+static int   UseMPKeyboard = 1, AutoOpenKeyboard = 1;   // pinjam keyboard dari libMP32.so
 static int   HudAuto = 1, UseFontWrap = 1;          // HudAuto: posisi teks otomatis dari ukuran layar
 static int   g_scrW = 0, g_scrH = 0;
 static const bool  ENABLE_CRIME = false;          // todong/copet: nyalakan setelah aksi ped selesai dibuat
@@ -56,9 +57,9 @@ static bool TryWrite(const std::string& path) {
     if (!f) return false;
     fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
                "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n"
-               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\n",
+               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nAutoOpenKeyboard=%d\n",
             PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender,
-            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap);
+            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard);
     fclose(f);
     return true;
 }
@@ -69,7 +70,7 @@ static void LoadConfig() {
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
-    char line[256]; bool hasNew = false;
+    char line[256]; bool hasNew = false, hasKb = false;
     while (fgets(line, sizeof line, f)) {
         char k[64], v[160];
         if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
@@ -82,6 +83,8 @@ static void LoadConfig() {
             else if (key == "HudX")          HudX = (float)atof(val.c_str());
             else if (key == "HudAuto")       { HudAuto = atoi(val.c_str()); hasNew = true; }
             else if (key == "UseFontWrap")   UseFontWrap = atoi(val.c_str());
+            else if (key == "UseMPKeyboard")    { UseMPKeyboard = atoi(val.c_str()); hasKb = true; }
+            else if (key == "AutoOpenKeyboard") AutoOpenKeyboard = atoi(val.c_str());
             else if (key == "HudY")          HudY = (float)atof(val.c_str());
             else if (key == "HudLine")       HudLine = (float)atof(val.c_str());
             else if (key == "HudScale")      HudScale = (float)atof(val.c_str());
@@ -93,7 +96,7 @@ static void LoadConfig() {
         }
     }
     fclose(f);
-    if (!hasNew) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
+    if (!hasNew || !hasKb) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
 }
 
 // ============================ Baca memori game dengan aman ============================
@@ -262,6 +265,37 @@ static void PollChatFile() {
     SendChat(said);
 }
 
+
+// ============================ Keyboard pinjaman dari mod multiplayer (libMP32.so) ============================
+// Simbol hasil dump: VKeyboard::Open / IsOpen / Close. Dugaan: fungsi statis (tanpa "this"); jejak crash ada di crumb.txt.
+static bool (*VK_IsOpen)();
+static void (*VK_Open)(const char*, const char*, int, void (*)(const char*, void*), void*, bool);
+static void (*VK_Close)();
+static std::mutex kbMx; static std::string kbSaid; static bool kbDone = false, kbCancelled = false;
+static bool kbArmed = true; static int kbOpenedFrame = -100000; static float kbRearm = 0;
+static int g_kbCrumbs = 0;
+static void KbCrumb(const char* what) {
+    if (g_kbCrumbs++ >= 25) return;
+    std::string f = VIS_DIR + "InteractivePeds_crumb.txt";
+    FILE* fp = fopen(f.c_str(), "a"); if (fp) { fprintf(fp, "%s\n", what); fclose(fp); }
+}
+static void OnKeyboardDone(const char* text, void*) {          // dipanggil mod MP saat lu tekan kirim / batal
+    std::lock_guard<std::mutex> g(kbMx);
+    if (text && *text) kbSaid = std::string(text).substr(0, 180); else kbCancelled = true;
+    kbDone = true;
+}
+static void ResolveMPKeyboard() {
+    if (VK_Open) return;
+    void* h = aml->GetLibHandle("libMP32.so");
+    if (!h) h = dlopen("libMP32.so", RTLD_NOW | RTLD_NOLOAD);
+    if (!h) { Mark("MP32: library tidak ditemukan (keyboard pinjaman mati)"); return; }
+    uintptr_t a = aml->GetSym(h, "_ZN9VKeyboard4OpenEPKcS1_iPFvS1_PvES2_b");
+    uintptr_t b = aml->GetSym(h, "_ZN9VKeyboard6IsOpenEv");
+    uintptr_t c = aml->GetSym(h, "_ZN9VKeyboard5CloseEv");
+    Mark(std::string("MP32 keyboard: Open=") + (a ? "ADA" : "TIDAK") + " IsOpen=" + (b ? "ADA" : "TIDAK") + " Close=" + (c ? "ADA" : "TIDAK"));
+    if (a && b) { SET_TO(VK_Open, a); SET_TO(VK_IsOpen, b); SET_TO(VK_Close, c); }
+}
+
 // ============================ Loop per frame (hook CHud::Draw) ============================
 static int g_frame = 0, g_logs = 0;
 static std::vector<std::string> g_hudLines;
@@ -303,6 +337,28 @@ static void Render2D_hook() {
     if (!canTalk && talkPed && bubbleTime <= 0) {                    // pergi = obrolan selesai, ped ingat player
         PedMind& m = brain.get(talkId); if (m.timesTalked > 0) m.knowsPlayer = true;
         talkPed = nullptr;
+    }
+
+    // keyboard in-game (pinjam dari libMP32.so)
+    if (UseMPKeyboard) {
+        if (!VK_Open) ResolveMPKeyboard();
+        if (VK_Open && VK_IsOpen) {
+            KbCrumb("kb: IsOpen"); bool kbOpen = VK_IsOpen();
+            { std::lock_guard<std::mutex> g(kbMx);
+              if (kbDone) {
+                  kbDone = false;
+                  if (!kbSaid.empty()) { std::string said = kbSaid; kbSaid.clear(); if (talkPed) SendChat(said); kbRearm = 6.f; }   // terkirim -> boleh ngobrol lagi 6 detik lagi
+                  else if (kbCancelled) { kbCancelled = false; kbRearm = 0; }                                                       // batal -> tunggu player menjauh
+              } }
+            if (canTalk && AutoOpenKeyboard && kbArmed && !kbOpen && g_frame - kbOpenedFrame > 120) {
+                PedMind& pm = brain.get(talkId);
+                std::string title = "Ngobrol dengan " + pm.name;
+                KbCrumb("kb: Open"); VK_Open(title.c_str(), "", 120, OnKeyboardDone, nullptr, false); KbCrumb("kb: Open selesai");
+                kbArmed = false; kbOpenedFrame = g_frame;
+            }
+            if (!canTalk && best > TALK_RANGE + 3.f) kbArmed = true;
+            if (kbRearm > 0) { kbRearm -= dt; if (kbRearm <= 0) kbArmed = true; }
+        }
     }
 
     // balasan AI
@@ -390,6 +446,7 @@ static void DumpSymbols(const char* lib, const char* outName, std::vector<const 
 extern "C" void OnModPreLoad() { LoadConfig(); Mark("1. OnModPreLoad"); }
 extern "C" void OnAllModsLoaded() {
     Mark("5. OnAllModsLoaded");
+    if (UseMPKeyboard) ResolveMPKeyboard();
     // Mod multiplayer (libMP32.so) baru termuat SETELAH mod kita, jadi dicek di sini
     std::thread([]() {
         DumpSymbols("libMP32.so", "InteractivePeds_symbols_MP32.txt", {"Keyboard", "KeyBoard", "Chat", "Input", "Say", "Send", "Command", "Cmd", "Edit", "Key", "Text", "Message", "Msg"});
