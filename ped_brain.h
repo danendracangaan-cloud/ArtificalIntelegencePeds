@@ -12,6 +12,51 @@
 enum class Trait { Friendly, Grumpy, Criminal, Nervous, Cocky };
 enum class Act   { None, Greet, Insult, Rob, Pickpocket };
 
+// ---------- Bahasa & maksud ucapan player ----------
+enum class Lang   { EN, ID, ES };
+enum class Intent { None, Follow, Stop, Leave, Dance, HandsUp, Wave, Flee, Fight };
+
+inline std::string LowerPad(const std::string& s) {
+    std::string t = " ";
+    for (char c : s) t += (char)tolower((unsigned char)c);
+    t += " ";
+    return t;
+}
+inline bool HasAny(const std::string& t, std::initializer_list<const char*> ks) {
+    for (auto k : ks) if (t.find(k) != std::string::npos) return true;
+    return false;
+}
+// Default Inggris. Indonesia/Spanyol hanya kalau ada penanda kuat.
+inline Lang DetectLang(const std::string& said) {
+    std::string t = LowerPad(said);
+    int id = 0, es = 0;
+    for (const char* k : {" gua ", " gue ", " lu ", " elu ", " aku ", " kamu ", " nggak ", " gak ", " tidak ", " dong ", " kok ", " banget ", " halo ", " makasih ", " terima kasih ", " siapa ", " dimana ", " gimana ", " yang ", " apa ", " mau ", " bisa ", " uang ", " duit ", " lagi ", " ikut ", " pergi ", " tolong ", " sama "})
+        if (t.find(k) != std::string::npos) id++;
+    for (const char* k : {" hola ", " gracias ", " amigo ", " como ", " cómo ", " qué ", " que tal ", " dinero ", " donde ", " dónde ", " adiós ", " adios ", " buenos ", " por favor ", " quién ", " puedes ", " necesito ", " hablas ", " vete ", " sígueme ", " sigueme "})
+        if (t.find(k) != std::string::npos) es++;
+    if (id > es && id >= 1) return Lang::ID;
+    if (es > id && es >= 1) return Lang::ES;
+    return Lang::EN;
+}
+inline Intent DetectIntent(const std::string& said) {
+    std::string t = LowerPad(said);
+    if (HasAny(t, {"hands up", "put your hands", "put em up", "angkat tangan", "manos arriba"})) return Intent::HandsUp;
+    if (HasAny(t, {"follow me", "come with me", "come along", "come on with me", "ikut gua", "ikut gue", "ikut aku", "ikuti gua", "ikuti gue", "sígueme", "sigueme"})) return Intent::Follow;
+    if (HasAny(t, {"fight me", "let's fight", "lets fight", "wanna fight", "punch", "come at me", "berantem", "ayo berkelahi", "pukul gua", "pelea"})) return Intent::Fight;
+    if (HasAny(t, {"run away", "run!", "run for", "lari", "corre "})) return Intent::Flee;
+    if (HasAny(t, {"go away", "get lost", "leave me", "scram", "beat it", "pergi", "minggir", "enyah", "vete", "piss off"})) return Intent::Leave;
+    if (HasAny(t, {"dance", "dancing", "joget", "menari", "baila"})) return Intent::Dance;
+    if (HasAny(t, {"wave", "lambai", "say hi to everyone"})) return Intent::Wave;
+    if (HasAny(t, {"stop", "wait", "stay here", "stay put", "stand still", "don't move", "dont move", "freeze", "tunggu", "berhenti", "diam", "espera", "quédate", "quedate"})) return Intent::Stop;
+    return Intent::None;
+}
+inline const char* IntentName(Intent i) {
+    switch (i) { case Intent::Follow: return "follow"; case Intent::Stop: return "stop"; case Intent::Leave: return "leave";
+                 case Intent::Dance: return "dance"; case Intent::HandsUp: return "hands_up"; case Intent::Wave: return "wave";
+                 case Intent::Flee: return "flee"; case Intent::Fight: return "fight"; default: return "none"; }
+}
+
+
 struct PedMind {
     uint32_t id = 0;
     std::string name;
@@ -19,6 +64,7 @@ struct PedMind {
     // mood 0..100
     float happy = 50, anger = 20, fear = 20, greed = 30;
     bool  knowsPlayer = false;
+    Lang  lang = Lang::EN;               // bahasa terakhir yang dipakai player
     int   timesTalked = 0;
     float lastSeenGameTime = 0;
     float cooldown = 0;                 // detik sebelum boleh inisiatif lagi
@@ -37,6 +83,19 @@ struct PedMind {
         if (happy > 70) return "senang";
         if (happy < 25) return "sedih/kesal";
         return "biasa aja";
+    }
+    const char* moodEN() const {
+        if (anger > 70) return "angry";
+        if (fear  > 70) return "scared";
+        if (happy > 70) return "happy";
+        if (happy < 25) return "sad/irritated";
+        return "neutral";
+    }
+    const char* traitEN() const {
+        switch (trait) {
+            case Trait::Friendly: return "friendly"; case Trait::Grumpy: return "grumpy";
+            case Trait::Criminal: return "sly street criminal"; case Trait::Nervous: return "nervous";
+            default: return "cocky"; }
     }
     const char* traitWord() const {
         switch (trait) {
@@ -57,8 +116,11 @@ public:
         auto it = minds.find(id);
         if (it != minds.end()) return it->second;
         PedMind m; m.id = id;
-        static const char* names[] = {"Jamal","Tony","Rico","Sasha","Dre","Mika","Carl","Luis","Tanya","Budi"};
-        m.name = names[rng() % 10];
+        static const char* names[] = {"Marcus","Tyrone","Jake","Danny","Ricky","Cody","Brandon","Terrell","Kyle","Derek",
+                                      "Jamal","Travis","Eddie","Vince","Hector","Luis","Mateo","Tony","Frank","Sam",
+                                      "Tasha","Brianna","Keisha","Megan","Ashley","Jasmine","Carla","Nicole","Rachel","Dana",
+                                      "Lupe","Maria","Tiffany","Jessica","Monique","Heather","Kayla","Rosa","Amber","Lisa"};
+        m.name = names[rng() % (sizeof names / sizeof names[0])];
         float r = rnd();
         m.trait = r < .35f ? Trait::Friendly : r < .55f ? Trait::Grumpy : r < .70f ? Trait::Criminal
                 : r < .85f ? Trait::Nervous : Trait::Cocky;
@@ -105,7 +167,7 @@ public:
     }
 
     // Fallback offline kalau server AI nggak ada / timeout
-    std::string offlineLine(const PedMind& m, Act a, const std::string& playerSays) {
+    std::string offlineLineID(const PedMind& m, Act a, const std::string& playerSays) {
         auto pick = [&](std::vector<std::string> v) { return v[rng() % v.size()]; };
         std::string who = m.knowsPlayer ? "Eh, lu lagi." : "";
         switch (a) {
@@ -129,7 +191,7 @@ public:
 
     // ---------- Balasan offline cerdas: baca maksud kalimat player + mood + kepribadian + ingatan ----------
     // dH/dA/dF = perubahan mood (senang/marah/takut) akibat ucapan player.
-    std::string offlineChat(const PedMind& m, const std::string& said, int& dH, int& dA, int& dF) {
+    std::string offlineChatID(const PedMind& m, const std::string& said, int& dH, int& dA, int& dF) {
         std::string t = said;
         for (auto& c : t) c = (char)tolower((unsigned char)c);
         auto has = [&](std::initializer_list<const char*> ks) { for (auto k : ks) if (t.find(k) != std::string::npos) return true; return false; };
@@ -211,17 +273,182 @@ public:
         return pick({"Hmm, gitu ya.", "Oke, oke. Terus?", "Menarik juga omongan lu.", "Gua dengerin kok. Lanjut.", "Yaa gitu deh jalan hidup."});
     }
 
+
+    // ---------- Sapaan/olokan spontan (bahasa mengikuti player; default Inggris) ----------
+    std::string offlineLine(const PedMind& m, Act a, const std::string& playerSays) {
+        if (m.lang == Lang::ID) return offlineLineID(m, a, playerSays);
+        auto pick = [&](std::vector<std::string> v) { return v[rng() % v.size()]; };
+        bool es = m.lang == Lang::ES;
+        switch (a) {
+            case Act::Greet:
+                if (m.anger > 60) return pick({"What are you looking at?", "Move along, pal."});
+                if (es) return pick({"¡Hola, amigo!", "¿Qué onda, hermano?", "Buenas, ¿todo bien?"});
+                return m.knowsPlayer ? pick({"Hey, it's you again! Still alive, huh?", "Yo, my man! Remember me?"})
+                                     : pick({"Hey, how's it going?", "Morning, man.", "Yo. You new around here?"});
+            case Act::Insult:
+                return pick({"Nice outfit. Did you lose a bet?", "Out of my way, loser!", "What are you staring at, huh?"});
+            case Act::Rob:        return pick({"Wallet. NOW!", "Don't move! Hand over the cash!"});
+            default: return "";
+        }
+    }
+
+    // ---------- Balasan chat offline: Inggris (default) ----------
+    std::string offlineChatEN(const PedMind& m, const std::string& said, int& dH, int& dA, int& dF) {
+        std::string t = LowerPad(said);
+        std::string last;
+        for (int i = (int)m.history.size() - 1; i >= 0; i--) if (m.history[i].rfind("N: ", 0) == 0) { last = m.history[i].substr(3); break; }
+        auto pick = [&](std::vector<std::string> v) {
+            for (int k = 0; k < 8; k++) { const std::string& c = v[rng() % v.size()]; if (c != last) return c; }
+            return v[0];
+        };
+        bool angry = m.anger > 60, scared = m.fear > 60, happy = m.happy > 65;
+        bool nervous = m.trait == Trait::Nervous, cocky = m.trait == Trait::Cocky, crim = m.trait == Trait::Criminal;
+        const std::string& n = m.name;
+        dH = dA = dF = 0;
+        if (HasAny(t, {"kill you", "shoot you", "i'll kill", "gonna kill", "beat you", "i'll hurt", "you're dead", "you are dead", "bury you"})) {
+            dF = 25; dA = 10; dH = -15;
+            if (scared || nervous) return pick({"Whoa, easy man! I don't want any trouble!", "P-please don't hurt me, I'll just go!", "Okay okay, I'm leaving, just stay calm!"});
+            if (cocky || crim)     return pick({"You really wanna do this? Bad idea, pal.", "I've dealt with tougher guys than you.", "Try me. See what happens."});
+            return pick({"Hey, back off. I'll call the cops!", "Watch your mouth, buddy.", "Not cool, man. Not cool at all."});
+        }
+        if (HasAny(t, {"idiot", "stupid", "dumb", "asshole", "bitch", "fuck you", "loser", "ugly", "shut up", "moron", "jerk", "bastard"})) {
+            dA = 20; dH = -15;
+            if (nervous) return pick({"Wow... that was rude. What did I do?", "Okay, okay, no need to yell.", "I'm just gonna walk away now."});
+            if (cocky || angry || m.trait == Trait::Grumpy) return pick({"Say that again, I dare you!", "Big mouth for someone who doesn't know me.", "Careful, pal. I'm not in the mood."});
+            return pick({"Damn, that was uncalled for.", "Chill out, man. I didn't do anything to you.", "Rough day, huh?"});
+        }
+        if (HasAny(t, {"thank", "thanks", "thx", "appreciate", "awesome", "cool", "nice", "great job"})) {
+            dH = 12; dA = -8;
+            return pick({"No problem, buddy!", "Anytime, man. Take it easy.", "Heh, you're welcome. Stay safe out here."});
+        }
+        if (HasAny(t, {"bye", "goodbye", "see you", "see ya", "gotta go", "later", "i'm leaving", "take care"})) {
+            return pick({"Alright, take care out there.", "See you around, man.", m.knowsPlayer ? "Don't be a stranger, alright?" : "Take it easy."});
+        }
+        if (HasAny(t, {"your name", "who are you", "what's your name", "whats your name", "who're you", "introduce"})) {
+            dH = 3;
+            if (angry) return pick({"Why do you wanna know? It's " + n + ", alright?", "Name's " + n + ". Happy now?"});
+            return pick({"I'm " + n + ". And you?", "Name's " + n + ". Been hanging around this block for years.", "Call me " + n + "."});
+        }
+        if (HasAny(t, {"how are you", "how's it going", "hows it going", "what's up", "whats up", "how you doing", "how are things", "how do you do"})) {
+            dH = 4;
+            if (angry)  return pick({"Terrible. Today's been nothing but headaches.", "Don't ask. I'm in a rotten mood."});
+            if (scared) return pick({"A little on edge, honestly. This neighborhood isn't always safe.", "I'm fine... just keeping my eyes open."});
+            if (happy)  return pick({"Pretty damn good, man! Sun's out, nobody's bothering me.", "Can't complain! How about you?", "Living the dream, buddy."});
+            return pick({"Just getting by, you know how it is.", "Same old, same old. You?", "Not bad, not great."});
+        }
+        if (HasAny(t, {"hello", "hi ", "hey", "yo ", "sup", "good morning", "good evening", "good afternoon", "howdy", "greetings", "test"})) {
+            dH = 4;
+            if (m.knowsPlayer && m.timesTalked > 3) return pick({"Well look who it is, my regular! Back again?", "Hey, my man! We talk a lot lately.", "Yo! I know that face by now."});
+            if (m.knowsPlayer) return pick({"Hey, you're the one I talked to before. What's up?", "Oh, hey again. Good to see you."});
+            if (angry)  return pick({"What do you want? I'm busy.", "Make it quick, pal.", "Hmph. Something you need?"});
+            if (scared) return pick({"H-hey... you're not gonna cause trouble, right?", "Hi. I'm just passing through, man."});
+            if (happy)  return pick({"Hey there! Beautiful day, huh?", "Yo! Good to see a friendly face.", "Hi! Anything I can help with?"});
+            return pick({"Hey. What's up?", "Yo. You new around here?", "Hi there."});
+        }
+        if (HasAny(t, {"money", "cash", "dollar", "buck", "lend", "borrow", "loan", "broke", "rich"})) {
+            if (crim)  return pick({"Money, huh? Now you're speaking my language. How much you got?", "I know a few ways to make quick cash... for a cut.", "I don't lend, but I know where the money is."});
+            if (angry || m.greed > 70) return pick({"I'm broke myself, man. Ask someone else.", "Get a job, buddy."});
+            return pick({"I'm tight on cash, man. Sorry.", "Nope, nothing to spare right now.", "Wish I could help, I'm flat broke."});
+        }
+        if (HasAny(t, {"where is", "where's", "wheres", "how do i get", "directions", "which way", "lost", "hospital", "police station", "gym", "store", "shop"})) {
+            if (angry) return pick({"Do I look like a map to you?", "Ask someone else, I'm not a tour guide."});
+            return pick({"Sorry, I'm not from around here.", "Just keep going straight, you'll find it. Probably.", "I only know this block, man."});
+        }
+        if (HasAny(t, {"love you", "beautiful", "handsome", "pretty", "hot ", "cute", "date", "girlfriend", "boyfriend", "marry"})) {
+            dH = 5;
+            return pick({"Ha! Smooth. Real smooth.", "You flirting with me? Bold move.", "Careful, you'll make me blush."});
+        }
+        if (said.find('?') != std::string::npos) {
+            if (angry)   return pick({"Too many questions. Beat it.", "Ask someone else."});
+            if (nervous) return pick({"Uh... I'm not sure. Maybe?", "I don't wanna say, man."});
+            if (cocky)   return pick({"I know the answer, but you couldn't handle it.", "Good question. Wrong person to ask though."});
+            return pick({"Good question. Never thought about it.", "Hard to say. What do you think?", "Beats me, man."});
+        }
+        if (scared) return pick({"Please don't get any closer...", "You're making me uncomfortable.", "I should really get going."});
+        if (angry)  return pick({"I'm not in the mood. Move along.", "Whatever, pal.", "Leave me alone."});
+        if (happy)  return pick({"Ha! You're alright, you know that?", "Life's good, man.", "I like talking to you, honestly."});
+        return pick({"Hmm, I see.", "Okay... and then?", "Interesting.", "I'm listening, go on.", "That's how it goes around here."});
+    }
+
+    // ---------- Balasan chat offline: Spanyol (dasar) ----------
+    std::string offlineChatES(const PedMind& m, const std::string& said, int& dH, int& dA, int& dF) {
+        std::string t = LowerPad(said);
+        auto pick = [&](std::vector<std::string> v) { return v[rng() % v.size()]; };
+        dH = dA = dF = 0;
+        if (HasAny(t, {" gracias "})) { dH = 10; return pick({"¡De nada, amigo!", "Para eso estamos, hermano."}); }
+        if (HasAny(t, {" adiós ", " adios ", " hasta luego "})) return pick({"Cuídate mucho.", "Nos vemos, amigo."});
+        if (HasAny(t, {" nombre ", " quién eres ", " quien eres "})) return pick({"Me llamo " + m.name + ". ¿Y tú?", "Soy " + m.name + ", mucho gusto."});
+        if (HasAny(t, {" cómo estás ", " como estas ", " qué tal ", " que tal "})) { dH = 3; return pick({"Aquí, sobreviviendo. ¿Y tú?", "Bien, no me quejo."}); }
+        if (HasAny(t, {" hola ", " buenos "})) { dH = 4; return pick({"¡Hola! ¿Qué onda?", "¡Buenas! ¿En qué te ayudo?"}); }
+        if (HasAny(t, {" dinero "})) return pick({"No tengo dinero, hermano. Lo siento.", "Estoy en la quiebra, amigo."});
+        return pick({"Mmm, ya veo.", "Interesante, cuéntame más.", "Así es la vida por aquí."});
+    }
+
+    // ---------- Respons atas perintah (follow/stop/dance/...) ----------
+    // Mengembalikan teks jawaban dan mengisi `action` (aksi yang benar-benar dilakukan ped, "none" kalau menolak).
+    std::string intentReply(const PedMind& m, Intent in, Lang lang, std::string& action) {
+        auto pick = [&](std::vector<std::string> v) { return v[rng() % v.size()]; };
+        bool angry = m.anger > 60, scared = m.fear > 60 || m.trait == Trait::Nervous;
+        bool stubborn = angry || m.trait == Trait::Grumpy || m.trait == Trait::Cocky || m.trait == Trait::Criminal;
+        bool ok = true;
+        switch (in) {
+            case Intent::Follow:  ok = !stubborn || m.happy > 70; break;
+            case Intent::Stop:    ok = m.anger < 70; break;
+            case Intent::Leave:   ok = true; break;
+            case Intent::Dance:   ok = m.happy > 40 && m.trait != Trait::Grumpy; break;
+            case Intent::HandsUp: ok = scared; break;
+            case Intent::Wave:    ok = true; break;
+            case Intent::Flee:    ok = true; break;
+            case Intent::Fight:   ok = (m.trait == Trait::Cocky || angry || m.trait == Trait::Criminal); break;
+            default: ok = false; break;
+        }
+        action = ok ? IntentName(in) : "none";
+        bool id = lang == Lang::ID, es = lang == Lang::ES;
+        if (ok) switch (in) {
+            case Intent::Follow:  return id ? pick({"Oke, gua ikut. Jalan aja.", "Yaudah, gua nemenin lu."}) : es ? "Vale, te sigo." : pick({"Sure, lead the way.", "Alright, I'll tag along."});
+            case Intent::Stop:    return id ? pick({"Oke, gua tunggu di sini.", "Siap, gua diam."}) : es ? "Vale, aquí espero." : pick({"Okay, I'll wait right here.", "Fine, I'm not moving."});
+            case Intent::Leave:   return id ? pick({"Yaudah, gua cabut.", "Santai, gua pergi."}) : es ? "Ya me voy." : pick({"Fine, I'm out of here.", "Alright, alright, I'm gone."});
+            case Intent::Dance:   return id ? pick({"Hahaha, liat nih gerakan gua!", "Oke, gua joget!"}) : es ? "¡Mira estos pasos!" : pick({"Ha, you got it! Watch this.", "Alright, check out these moves!"});
+            case Intent::HandsUp: return id ? pick({"O-oke, oke! Tangan gua naik!", "Jangan sakiti gua!"}) : es ? "¡Vale, vale! ¡Manos arriba!" : pick({"Okay, okay! Hands up, see?", "Don't shoot!"});
+            case Intent::Wave:    return id ? "*melambai* Halo semuanya!" : es ? "*saluda* ¡Hola!" : "*waves* Hey there!";
+            case Intent::Flee:    return id ? "Lari? Oke, gua kabur!" : es ? "¡Corro, corro!" : "Run? Okay, I'm gone!";
+            case Intent::Fight:   return id ? pick({"Mau berantem? Sini lu!", "Lu yang minta!"}) : es ? "¿Quieres pelea? ¡Ven!" : pick({"You wanna fight? Bring it.", "Your funeral, pal."});
+            default: break;
+        }
+        switch (in) {
+            case Intent::Follow:  return id ? pick({"Ogah, gua punya urusan sendiri.", "Nggak mau, bro."}) : es ? "No, tengo mis asuntos." : pick({"Nah, I've got my own business.", "Not a chance, pal."});
+            case Intent::Stop:    return id ? "Gua jalan ke mana gua mau." : es ? "Voy a donde quiera." : "I'll go where I please.";
+            case Intent::Dance:   return id ? "Gua bukan penari, bro." : es ? "No soy bailarín." : "I'm not a dancer, buddy.";
+            case Intent::HandsUp: return id ? "Lu bukan polisi. Lupain aja." : es ? "No eres policía. Olvídalo." : "You're not a cop. Forget it.";
+            case Intent::Fight:   return id ? "Gua nggak mau berantem sama lu." : es ? "No quiero pelear." : "Whoa, I'm not fighting you, man.";
+            default:              return id ? "Nggak, makasih." : es ? "No, gracias." : "Nope.";
+        }
+    }
+
+    // ---------- Dispatcher: bahasa + maksud + mood ----------
+    std::string offlineChat(const PedMind& m, const std::string& said, int& dH, int& dA, int& dF, std::string& action) {
+        Lang lang = DetectLang(said);
+        Intent in = DetectIntent(said);
+        action = "none"; dH = dA = dF = 0;
+        if (in != Intent::None) { if (in == Intent::HandsUp || in == Intent::Fight) dF = 5; return intentReply(m, in, lang, action); }
+        if (lang == Lang::ID) return offlineChatID(m, said, dH, dA, dF);
+        if (lang == Lang::ES) return offlineChatES(m, said, dH, dA, dF);
+        return offlineChatEN(m, said, dH, dA, dF);
+    }
+
     // Prompt untuk LLM lewat proxy
     std::string buildPrompt(const PedMind& m, const std::string& playerSays, int playerMoney, int hour) {
-        char buf[512];
+        char buf[700];
+        const char* lg = m.lang == Lang::ID ? "Indonesian" : m.lang == Lang::ES ? "Spanish" : "English";
         snprintf(buf, sizeof buf,
-            "Kamu adalah NPC bernama %s di kota GTA San Andreas. Kepribadian: %s. Mood sekarang: %s "
-            "(happy=%d anger=%d fear=%d). %s Uang player: $%d. Jam game: %02d:00.\n",
-            m.name.c_str(), m.traitWord(), m.moodWord(), (int)m.happy, (int)m.anger, (int)m.fear,
-            m.knowsPlayer ? "Kamu SUDAH kenal player ini dari obrolan sebelumnya." : "Kamu belum kenal player ini.",
-            playerMoney, hour);
+            "You are %s, a pedestrian in Los Santos, San Andreas (a fictional USA). Personality: %s. Current mood: %s "
+            "(happy=%d anger=%d fear=%d). %s Player's cash: $%d. Game time: %02d:00. "
+            "The player's last message looks like: %s. Reply in the SAME language the player writes in; if unsure, use English.\n",
+            m.name.c_str(), m.traitEN(), m.moodEN(), (int)m.happy, (int)m.anger, (int)m.fear,
+            m.knowsPlayer ? "You already know this player from earlier conversations." : "You don't know this player yet.",
+            playerMoney, hour, lg);
         std::string p = buf;
-        p += "Riwayat:\n";
+        p += "Conversation so far:\n";
         for (auto& h : m.history) p += h + "\n";
         p += "Player: " + playerSays + "\n";
         return p;

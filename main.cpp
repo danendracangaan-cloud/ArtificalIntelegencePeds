@@ -177,10 +177,21 @@ static void Game_AddMoney(int) {}
 static int  Game_Wanted()      { return 0; }
 static bool Game_PlayerArmed() { return false; }
 static void Act_AimAtPlayer(void*) {}
-static void Act_Flee(void*) {}
+
 static void Act_ShootPlayer(void*) {}
 static void Act_PickpocketRun(void*) {}
-static void Act_FaceAndStop(void*) {}
+static int g_stubLogs = 0;
+static void StubLog(const char* what) { if (g_stubLogs++ < 40) Mark(std::string("AKSI (belum terhubung ke game): ") + what); }
+static void Act_Flee(void*)         { StubLog("flee"); }
+static void Act_FaceAndStop(void*)  { StubLog("hadap player + diam"); }
+static void Act_TalkGesture(void*, bool on) { StubLog(on ? "gesture bicara ON" : "gesture bicara OFF"); }
+static void Act_Release(void*)      { StubLog("lepas ped (lanjut aktivitas)"); }
+static void Act_Follow(void*)       { StubLog("follow"); }
+static void Act_Stop(void*)         { StubLog("stop/diam"); }
+static void Act_Leave(void*)        { StubLog("pergi"); }
+static void Act_Dance(void*)        { StubLog("dance"); }
+static void Act_HandsUp(void*)      { StubLog("angkat tangan"); }
+static void Act_Wave(void*)         { StubLog("melambai"); }
 
 // ============================ Teks di layar (font bawaan game) ============================
 static int g_crumbs = 0;
@@ -204,7 +215,21 @@ static void DrawHud(const std::string& txt, int line) {
     if (UseFontWrap && Font_SetWrapx) { Crumb("draw: SetWrapx"); Font_SetWrapx(g_scrW > 0 ? (float)g_scrW : 3000.f); }
     if (UseFontColor && Font_SetColor) { Crumb("draw: SetColor"); Font_SetColor(0xFF00DCFF); }
     uint16_t w[128]; size_t i = 0;
-    for (; i < txt.size() && i < 127; i++) w[i] = (uint8_t)txt[i];
+    {   // UTF-8 -> huruf dasar (font game belum tentu punya aksen)
+        static const char* lat = "AAAAAAACEEEEIIIIDNOOOOOxOUUUUYTsaaaaaaaceeeeiiiidnooooo/ouuuuyty";
+        for (size_t k = 0; k < txt.size() && i < 127; ) {
+            unsigned char c = (unsigned char)txt[k]; uint32_t cp = c; size_t len = 1;
+            if (c >= 0xF0) { len = 4; cp = c & 7; } else if (c >= 0xE0) { len = 3; cp = c & 15; } else if (c >= 0xC0) { len = 2; cp = c & 31; }
+            for (size_t j = 1; j < len && k + j < txt.size(); j++) cp = (cp << 6) | ((unsigned char)txt[k + j] & 63);
+            k += len;
+            if (cp == 0xBF) cp = '?'; else if (cp == 0xA1) cp = '!';
+            else if (cp >= 0xC0 && cp <= 0xFF) cp = (unsigned char)lat[cp - 0xC0];
+            else if (cp == 0x2019 || cp == 0x2018) cp = '\'';
+            else if (cp == 0x201C || cp == 0x201D) cp = '"';
+            else if (cp > 126 || (cp < 32 && cp != 0)) cp = '?';
+            w[i++] = (uint16_t)cp;
+        }
+    }
     w[i] = 0;
     float x = HudX, y = HudY + HudLine * line;
     if (HudAuto && g_scrW > 0 && g_scrH > 0) {                        // posisi otomatis dari ukuran layar
@@ -222,7 +247,9 @@ static BrainRegistry& BR() { static BrainRegistry b; return b; }
 #define brain (BR())
 static void* talkPed = nullptr; static uint32_t talkId = 0;
 static std::string bubbleText; static float bubbleTime = 0;
-struct Reply { uint32_t id; std::string text; int dHappy, dAnger, dFear; };
+static bool g_waiting = false; static float g_waitT = 0;      // menunggu balasan AI
+static bool g_kbOpen = false;
+struct Reply { uint32_t id; std::string text; int dHappy, dAnger, dFear; std::string action; };
 static std::mutex qmx; static std::queue<Reply> replies;
 
 static void LogChat(const std::string& s) {
@@ -230,29 +257,67 @@ static void LogChat(const std::string& s) {
     FILE* fp = fopen(f.c_str(), "a");
     if (fp) { fprintf(fp, "%s\n", s.c_str()); fclose(fp); }
 }
+static void SetBubble(const std::string& txt) {
+    bubbleText = txt;
+    bubbleTime = std::min(16.f, 4.f + (float)txt.size() * 0.07f);      // makin panjang, makin lama tampil
+}
+static std::vector<std::string> WrapText(const std::string& s, size_t w) {
+    std::vector<std::string> out; std::string line, word;
+    auto flush = [&]() {
+        if (word.empty()) return;
+        if (line.empty()) line = word;
+        else if (line.size() + 1 + word.size() <= w) line += " " + word;
+        else { out.push_back(line); line = word; }
+        word.clear();
+    };
+    for (char c : s) { if (c == ' ' || c == '\n' || c == '\r') flush(); else word += c; }
+    flush(); if (!line.empty()) out.push_back(line);
+    return out;
+}
+
+// Jalankan aksi yang diputuskan ped (hasil AI atau hasil deteksi perintah)
+static int g_actLogs = 0;
+static void ExecuteAction(void* ped, const std::string& act, PedMind& m) {
+    if (act.empty() || act == "none" || !ped) return;
+    if (g_actLogs++ < 40) Mark("ACTION: " + act + " (" + m.name + ")");
+    if      (act == "follow")   Act_Follow(ped);
+    else if (act == "stop")     Act_Stop(ped);
+    else if (act == "leave")    Act_Leave(ped);
+    else if (act == "dance")    Act_Dance(ped);
+    else if (act == "hands_up") Act_HandsUp(ped);
+    else if (act == "wave")     Act_Wave(ped);
+    else if (act == "flee")     Act_Flee(ped);
+    else if (act == "fight")    { if (ENABLE_CRIME) Act_AimAtPlayer(ped); }
+}
 
 // Kirim ucapan player ke AI (thread terpisah). Balasan masuk lewat antrean `replies`.
 static void SendChat(const std::string& said) {
-    if (!talkPed || said.empty()) return;
+    if (said.empty() || !talkId) return;
     PedMind& m = brain.get(talkId);
+    m.lang = DetectLang(said);                                       // bahasa terakhir player (default Inggris)
     m.remember("P", said); m.timesTalked++;
     std::string prompt = brain.buildPrompt(m, said, Game_PlayerMoney(), Game_Hour());
     uint32_t id = talkId; PedMind snap = m;
-    bubbleText = m.name + ": ..."; bubbleTime = 15;
+    bubbleText = m.name + ": ..."; bubbleTime = 20; g_waiting = true; g_waitT = 0;
     LogChat("Player: " + said);
     std::string host = PROXY_HOST, port = PROXY_PORT;
     std::thread([id, prompt, said, snap, host, port]() {
-        std::string out; Reply r{id, "", 0, 0, 0};
-        if (http_post(host, port, "/chat", prompt, out)) {
+        std::string out; Reply r{id, "", 0, 0, 0, "none"};
+        if (http_post(host, port, "/chat", prompt, out, 7)) {
             size_t nl = out.find('\n');
-            if (nl != std::string::npos) { sscanf(out.substr(0, nl).c_str(), "%d,%d,%d", &r.dHappy, &r.dAnger, &r.dFear); r.text = out.substr(nl + 1); }
-            else r.text = out;
-        } else { BrainRegistry tmp; r.text = tmp.offlineChat(snap, said, r.dHappy, r.dAnger, r.dFear); }   // offline cerdas
+            if (nl != std::string::npos) {
+                char act[48] = {0};
+                int n = sscanf(out.substr(0, nl).c_str(), "%d,%d,%d,%47s", &r.dHappy, &r.dAnger, &r.dFear, act);
+                if (n == 4) r.action = act;
+                r.text = out.substr(nl + 1);
+            } else r.text = out;
+            while (!r.text.empty() && (r.text.back() == '\n' || r.text.back() == '\r' || r.text.back() == ' ')) r.text.pop_back();
+        } else { BrainRegistry tmp; r.text = tmp.offlineChat(snap, said, r.dHappy, r.dAnger, r.dFear, r.action); }   // offline cerdas
         std::lock_guard<std::mutex> g(qmx); replies.push(r);
     }).detach();
 }
 
-// Input sementara: tulis pesan di file chat.txt (folder Android_Unprotected/data/<game>/), simpan, lalu dekati ped.
+// Input cadangan: tulis pesan di file chat.txt (folder Android_Unprotected/data/<game>/), simpan, lalu dekati ped.
 static void PollChatFile() {
     if (!talkPed) return;
     std::string f = VIS_DIR + "chat.txt";
@@ -298,7 +363,13 @@ static void ResolveMPKeyboard() {
 
 // ============================ Loop per frame (hook CHud::Draw) ============================
 static int g_frame = 0, g_logs = 0;
-static std::vector<std::string> g_hudLines;
+
+static void EndTalk() {                                              // obrolan selesai: ped ingat player, lanjut aktivitas
+    if (!talkPed) return;
+    PedMind& m = brain.get(talkId); if (m.timesTalked > 0) m.knowsPlayer = true;
+    Act_TalkGesture(talkPed, false); Act_Release(talkPed);
+    talkPed = nullptr;
+}
 
 static void Render2D_hook() {
     Render2D_orig();                                                 // HUD asli dulu
@@ -320,63 +391,87 @@ static void Render2D_hook() {
         CVector q; if (!EntityPos(p, q)) continue;
         float d = std::hypot(q.x - pp.x, q.y - pp.y);
         if (d < best) { best = d; nearest = p; }
-        if (g_frame % 5 == 0 && ENABLE_CRIME) { /* inisiatif ped: lihat DoAction di versi berikut */ }
     }
-    if (nearest && best < 8.f && g_frame % 600 == 0) {              // sapaan/olokan spontan (teks saja)
+
+    // Kunci lawan bicara selama obrolan masih berlangsung (supaya balasan nggak "hilang" karena ganti target)
+    bool locked = talkPed && (g_waiting || bubbleTime > 0 || g_kbOpen || kbRearm > 0);
+    void* target = nearest; float tdist = best;
+    if (locked) {
+        CVector q;
+        if (std::find(g_peds.begin(), g_peds.end(), talkPed) != g_peds.end() && EntityPos(talkPed, q)) { target = talkPed; tdist = std::hypot(q.x - pp.x, q.y - pp.y); }
+        else locked = false;
+    }
+
+    // sapaan/olokan spontan
+    if (!locked && nearest && best < 8.f && g_frame % 600 == 0) {
         PedMind& m = brain.get((uint32_t)(uintptr_t)nearest);
         Act a = brain.decide(m, best, 0, 0, false);
         if (a == Act::Greet || a == Act::Insult) {
+            if (talkPed != nearest) EndTalk();
             talkPed = nearest; talkId = m.id;
-            bubbleText = m.name + ": " + brain.offlineLine(m, a, ""); bubbleTime = 6;
+            SetBubble(m.name + ": " + brain.offlineLine(m, a, ""));
             LogChat(bubbleText);
         }
     }
-    bool canTalk = nearest && best < TALK_RANGE;
-    if (canTalk && talkPed != nearest) { talkPed = nearest; talkId = (uint32_t)(uintptr_t)nearest;
-        PedMind& m = brain.get(talkId); bubbleText = m.name + (m.knowsPlayer ? ": Oh, lu lagi." : ": Ya?"); bubbleTime = 4; }
-    if (!canTalk && talkPed && bubbleTime <= 0) {                    // pergi = obrolan selesai, ped ingat player
-        PedMind& m = brain.get(talkId); if (m.timesTalked > 0) m.knowsPlayer = true;
-        talkPed = nullptr;
+
+    bool canTalk = target && tdist < (locked ? TALK_RANGE + 3.f : TALK_RANGE);
+    if (canTalk && talkPed != target) {                              // mulai ngobrol dengan ped baru
+        EndTalk();
+        talkPed = target; talkId = (uint32_t)(uintptr_t)target;
+        PedMind& m = brain.get(talkId);
+        bool id = m.lang == Lang::ID;
+        SetBubble(m.name + ": " + (m.knowsPlayer ? (id ? "Eh, lu lagi." : "Oh, it's you again.") : (id ? "Ya?" : "Yeah?")));
+        Act_FaceAndStop(talkPed); Act_TalkGesture(talkPed, true);    // hadap player, diam, gesture bicara
     }
+    if (!canTalk && talkPed && !locked) EndTalk();
 
     // keyboard in-game (pinjam dari libMP32.so)
     if (UseMPKeyboard) {
         if (!VK_Open) ResolveMPKeyboard();
         if (VK_Open && VK_IsOpen) {
-            KbCrumb("kb: IsOpen"); bool kbOpen = VK_IsOpen();
+            KbCrumb("kb: IsOpen"); bool kbOpen = VK_IsOpen(); g_kbOpen = kbOpen;
             { std::lock_guard<std::mutex> g(kbMx);
               if (kbDone) {
                   kbDone = false;
-                  if (!kbSaid.empty()) { std::string said = kbSaid; kbSaid.clear(); if (talkPed) SendChat(said); kbRearm = 6.f; }   // terkirim -> boleh ngobrol lagi 6 detik lagi
-                  else if (kbCancelled) { kbCancelled = false; kbRearm = 0; }                                                       // batal -> tunggu player menjauh
+                  if (!kbSaid.empty()) { std::string said = kbSaid; kbSaid.clear(); SendChat(said); kbRearm = 6.f; }   // terkirim -> boleh ngobrol lagi 6 detik setelah balasan
+                  else if (kbCancelled) { kbCancelled = false; kbRearm = 0; }                                         // batal -> tunggu player menjauh
               } }
-            if (canTalk && AutoOpenKeyboard && kbArmed && !kbOpen && g_frame - kbOpenedFrame > 120) {
+            if (canTalk && AutoOpenKeyboard && kbArmed && !kbOpen && !g_waiting && g_frame - kbOpenedFrame > 120) {
                 PedMind& pm = brain.get(talkId);
-                std::string title = "Ngobrol dengan " + pm.name;
+                std::string title = "Talk to " + pm.name;
                 KbCrumb("kb: Open"); VK_Open(title.c_str(), "", 120, OnKeyboardDone, nullptr, false); KbCrumb("kb: Open selesai");
                 kbArmed = false; kbOpenedFrame = g_frame;
             }
-            if (!canTalk && best > TALK_RANGE + 3.f) kbArmed = true;
-            if (kbRearm > 0) { kbRearm -= dt; if (kbRearm <= 0) kbArmed = true; }
+            if (!canTalk && tdist > TALK_RANGE + 3.f) kbArmed = true;
+            if (kbRearm > 0 && !g_waiting) { kbRearm -= dt; if (kbRearm <= 0) kbArmed = true; }
         }
     }
 
     // balasan AI
+    if (g_waiting) { g_waitT += dt; if (g_waitT > 20.f) g_waiting = false; }
     { std::lock_guard<std::mutex> g(qmx);
       while (!replies.empty()) {
           Reply r = replies.front(); replies.pop();
           PedMind& m = brain.get(r.id);
           m.happy += r.dHappy; m.anger += r.dAnger; m.fear += r.dFear; m.clamp();
           m.remember("N", r.text);
-          bubbleText = m.name + ": " + r.text; bubbleTime = 10;
+          SetBubble(m.name + ": " + r.text);
           LogChat(bubbleText);
+          g_waiting = false;
+          void* ped = nullptr;
+          for (void* p : g_peds) if ((uint32_t)(uintptr_t)p == r.id) { ped = p; break; }
+          ExecuteAction(ped, r.action, m);                           // bertindak sesuai yang dikatakan player
       } }
     if (g_frame % 45 == 0) PollChatFile();
 
-    // gambar
+    // gambar (teks panjang dipecah jadi beberapa baris)
     int line = 0;
-    if (canTalk) DrawHud("[ CHAT ]  tulis di chat.txt lalu simpan", line++);
-    if (bubbleTime > 0) { DrawHud(bubbleText, line++); bubbleTime -= dt; }
+    if (canTalk && !g_kbOpen && bubbleTime <= 0) DrawHud("[ CHAT ]", line++);
+    if (bubbleTime > 0) {
+        std::vector<std::string> ls = WrapText(bubbleText, 48);
+        for (size_t i = 0; i < ls.size() && i < 5; i++) DrawHud(ls[i], line++);
+        bubbleTime -= dt;
+    }
 
     // log bukti (dibatasi supaya file nggak membengkak)
     if (g_frame % 300 == 1 && g_logs < 12) {
@@ -480,6 +575,7 @@ extern "C" void OnModLoad() {
     if (hud) aml->Hook((void*)hud, (void*)Render2D_hook, (void**)&Render2D_orig);
     Mark("3. hook dipasang: " + std::string(hud ? "YA" : "TIDAK"));
     std::thread([]() {
+        DumpSymbols("libGTASA.so", "InteractivePeds_symbols_PED.txt", {"SetLookFlag", "ClearLook", "SetHeading", "AchieveHeading", "TurnToFace", "BlendAnimation", "AddAnimation", "CAnimManager", "StandStill", "SmartFlee", "FollowLeader", "FollowPed", "CTaskManager", "CPedIntelligence", "CTaskSimpleCarSetPedOut", "SetPedState", "SetMoveState", "PlayAnim", "TaskPlayAnim", "CTaskSimpleRunNamedAnim", "CTaskComplexWander", "CTaskSimpleHandsUp", "CTaskSimpleDuck", "CPed4Task", "CPed12SetIdle"});
         DumpSymbols("libGTASA.so", "InteractivePeds_symbols.txt", {"Touch", "Keyboard", "KeyBoard", "AND_", "OS_", "Widget", "CPad", "RsGlobal"});
     }).detach();
     Mark("4. OnModLoad selesai");
