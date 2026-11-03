@@ -1,5 +1,6 @@
 // ped_brain.h - "otak" tiap ped: kepribadian, mood, memori, keputusan, fallback offline.
 #pragma once
+#include "vocab.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -32,7 +33,7 @@ inline Lang DetectLang(const std::string& said) {
     int id = 0, es = 0;
     for (const char* k : {" gua ", " gue ", " lu ", " elu ", " aku ", " kamu ", " nggak ", " gak ", " tidak ", " dong ", " kok ", " banget ", " halo ", " makasih ", " terima kasih ", " siapa ", " dimana ", " gimana ", " yang ", " apa ", " mau ", " bisa ", " uang ", " duit ", " lagi ", " ikut ", " pergi ", " tolong ", " sama "})
         if (t.find(k) != std::string::npos) id++;
-    for (const char* k : {" hola ", " gracias ", " amigo ", " como ", " cómo ", " qué ", " que tal ", " dinero ", " donde ", " dónde ", " adiós ", " adios ", " buenos ", " por favor ", " quién ", " puedes ", " necesito ", " hablas ", " vete ", " sígueme ", " sigueme "})
+    for (const char* k : {" hola ", " gracias ", " amigo ", " como ", " cómo ", " qué ", " que tal ", " dinero ", " donde ", " dónde ", " adiós ", " adios ", " buenos ", " por favor ", " quién ", " puedes ", " necesito ", " hablas ", " vete ", " sígueme ", " sigueme ", " tengo ", " hambre ", " quiero ", " estoy ", " eres ", " pero ", " también ", " ayúdame ", " amiga "})
         if (t.find(k) != std::string::npos) es++;
     if (id > es && id >= 1) return Lang::ID;
     if (es > id && es >= 1) return Lang::ES;
@@ -65,6 +66,8 @@ struct PedMind {
     float happy = 50, anger = 20, fear = 20, greed = 30;
     bool  knowsPlayer = false;
     Lang  lang = Lang::EN;               // bahasa terakhir yang dipakai player
+    int   gender = 0;                    // 0 tidak diketahui, 1 cowok, 2 cewek (dari model skin)
+    int   model  = -1;                   // ID skin ped
     int   timesTalked = 0;
     float lastSeenGameTime = 0;
     float cooldown = 0;                 // detik sebelum boleh inisiatif lagi
@@ -109,6 +112,7 @@ class BrainRegistry {
 public:
     std::unordered_map<uint32_t, PedMind> minds;
     std::mt19937 rng{std::random_device{}()};
+    int genderHint = 0, modelHint = -1;            // diisi main.cpp sebelum get() untuk ped baru
 
     float rnd() { return std::uniform_real_distribution<float>(0, 1)(rng); }
 
@@ -116,11 +120,8 @@ public:
         auto it = minds.find(id);
         if (it != minds.end()) return it->second;
         PedMind m; m.id = id;
-        static const char* names[] = {"Marcus","Tyrone","Jake","Danny","Ricky","Cody","Brandon","Terrell","Kyle","Derek",
-                                      "Jamal","Travis","Eddie","Vince","Hector","Luis","Mateo","Tony","Frank","Sam",
-                                      "Tasha","Brianna","Keisha","Megan","Ashley","Jasmine","Carla","Nicole","Rachel","Dana",
-                                      "Lupe","Maria","Tiffany","Jessica","Monique","Heather","Kayla","Rosa","Amber","Lisa"};
-        m.name = names[rng() % (sizeof names / sizeof names[0])];
+        m.gender = genderHint; m.model = modelHint;
+        m.name = Vocab::NameFor(genderHint, rng);
         float r = rnd();
         m.trait = r < .35f ? Trait::Friendly : r < .55f ? Trait::Grumpy : r < .70f ? Trait::Criminal
                 : r < .85f ? Trait::Nervous : Trait::Cocky;
@@ -274,20 +275,26 @@ public:
     }
 
 
-    // ---------- Sapaan/olokan spontan (bahasa mengikuti player; default Inggris) ----------
+    // ---------- Konteks untuk mesin kosakata ----------
+    Vocab::Ctx ctxOf(const PedMind& m) {
+        Vocab::Ctx c; c.happy = m.happy; c.anger = m.anger; c.fear = m.fear; c.trait = (int)m.trait;
+        c.name = m.name; c.knows = m.knowsPlayer; c.times = m.timesTalked;
+        for (int i = (int)m.history.size() - 1; i >= 0 && c.recent.size() < 12; i--)
+            if (m.history[i].rfind("N: ", 0) == 0) c.recent.push_back(m.history[i].substr(3));
+        return c;
+    }
+    std::string vocabReply(const PedMind& m, const std::string& said, Lang lang, int& dH, int& dA, int& dF) {
+        Vocab::Ctx c = ctxOf(m);
+        return Vocab::Reply(c, said, (int)lang, rng, dH, dA, dF);
+    }
+
+    // ---------- Sapaan/olokan/gumaman spontan (bahasa mengikuti player; default Inggris) ----------
     std::string offlineLine(const PedMind& m, Act a, const std::string& playerSays) {
-        if (m.lang == Lang::ID) return offlineLineID(m, a, playerSays);
-        auto pick = [&](std::vector<std::string> v) { return v[rng() % v.size()]; };
-        bool es = m.lang == Lang::ES;
+        Vocab::Ctx c = ctxOf(m); int lang = (int)m.lang;
         switch (a) {
-            case Act::Greet:
-                if (m.anger > 60) return pick({"What are you looking at?", "Move along, pal."});
-                if (es) return pick({"¡Hola, amigo!", "¿Qué onda, hermano?", "Buenas, ¿todo bien?"});
-                return m.knowsPlayer ? pick({"Hey, it's you again! Still alive, huh?", "Yo, my man! Remember me?"})
-                                     : pick({"Hey, how's it going?", "Morning, man.", "Yo. You new around here?"});
-            case Act::Insult:
-                return pick({"Nice outfit. Did you lose a bet?", "Out of my way, loser!", "What are you staring at, huh?"});
-            case Act::Rob:        return pick({"Wallet. NOW!", "Don't move! Hand over the cash!"});
+            case Act::Greet:  return Vocab::Spontaneous(c, lang, rng() % 100 < 22 ? 2 : 0, rng);   // kadang malah gumam random
+            case Act::Insult: return Vocab::Spontaneous(c, lang, 1, rng);
+            case Act::Rob: { static const char* r[] = {"Wallet. NOW!", "Don't move! Hand over the cash!", "Empty your pockets, pal!"}; return r[rng() % 3]; }
             default: return "";
         }
     }
@@ -387,7 +394,6 @@ public:
     // ---------- Respons atas perintah (follow/stop/dance/...) ----------
     // Mengembalikan teks jawaban dan mengisi `action` (aksi yang benar-benar dilakukan ped, "none" kalau menolak).
     std::string intentReply(const PedMind& m, Intent in, Lang lang, std::string& action) {
-        auto pick = [&](std::vector<std::string> v) { return v[rng() % v.size()]; };
         bool angry = m.anger > 60, scared = m.fear > 60 || m.trait == Trait::Nervous;
         bool stubborn = angry || m.trait == Trait::Grumpy || m.trait == Trait::Cocky || m.trait == Trait::Criminal;
         bool ok = true;
@@ -403,26 +409,7 @@ public:
             default: ok = false; break;
         }
         action = ok ? IntentName(in) : "none";
-        bool id = lang == Lang::ID, es = lang == Lang::ES;
-        if (ok) switch (in) {
-            case Intent::Follow:  return id ? pick({"Oke, gua ikut. Jalan aja.", "Yaudah, gua nemenin lu."}) : es ? "Vale, te sigo." : pick({"Sure, lead the way.", "Alright, I'll tag along."});
-            case Intent::Stop:    return id ? pick({"Oke, gua tunggu di sini.", "Siap, gua diam."}) : es ? "Vale, aquí espero." : pick({"Okay, I'll wait right here.", "Fine, I'm not moving."});
-            case Intent::Leave:   return id ? pick({"Yaudah, gua cabut.", "Santai, gua pergi."}) : es ? "Ya me voy." : pick({"Fine, I'm out of here.", "Alright, alright, I'm gone."});
-            case Intent::Dance:   return id ? pick({"Hahaha, liat nih gerakan gua!", "Oke, gua joget!"}) : es ? "¡Mira estos pasos!" : pick({"Ha, you got it! Watch this.", "Alright, check out these moves!"});
-            case Intent::HandsUp: return id ? pick({"O-oke, oke! Tangan gua naik!", "Jangan sakiti gua!"}) : es ? "¡Vale, vale! ¡Manos arriba!" : pick({"Okay, okay! Hands up, see?", "Don't shoot!"});
-            case Intent::Wave:    return id ? "*melambai* Halo semuanya!" : es ? "*saluda* ¡Hola!" : "*waves* Hey there!";
-            case Intent::Flee:    return id ? "Lari? Oke, gua kabur!" : es ? "¡Corro, corro!" : "Run? Okay, I'm gone!";
-            case Intent::Fight:   return id ? pick({"Mau berantem? Sini lu!", "Lu yang minta!"}) : es ? "¿Quieres pelea? ¡Ven!" : pick({"You wanna fight? Bring it.", "Your funeral, pal."});
-            default: break;
-        }
-        switch (in) {
-            case Intent::Follow:  return id ? pick({"Ogah, gua punya urusan sendiri.", "Nggak mau, bro."}) : es ? "No, tengo mis asuntos." : pick({"Nah, I've got my own business.", "Not a chance, pal."});
-            case Intent::Stop:    return id ? "Gua jalan ke mana gua mau." : es ? "Voy a donde quiera." : "I'll go where I please.";
-            case Intent::Dance:   return id ? "Gua bukan penari, bro." : es ? "No soy bailarín." : "I'm not a dancer, buddy.";
-            case Intent::HandsUp: return id ? "Lu bukan polisi. Lupain aja." : es ? "No eres policía. Olvídalo." : "You're not a cop. Forget it.";
-            case Intent::Fight:   return id ? "Gua nggak mau berantem sama lu." : es ? "No quiero pelear." : "Whoa, I'm not fighting you, man.";
-            default:              return id ? "Nggak, makasih." : es ? "No, gracias." : "Nope.";
-        }
+        return Vocab::IntentLine((int)in, ok, (int)lang, rng);
     }
 
     // ---------- Dispatcher: bahasa + maksud + mood ----------
@@ -431,9 +418,7 @@ public:
         Intent in = DetectIntent(said);
         action = "none"; dH = dA = dF = 0;
         if (in != Intent::None) { if (in == Intent::HandsUp || in == Intent::Fight) dF = 5; return intentReply(m, in, lang, action); }
-        if (lang == Lang::ID) return offlineChatID(m, said, dH, dA, dF);
-        if (lang == Lang::ES) return offlineChatES(m, said, dH, dA, dF);
-        return offlineChatEN(m, said, dH, dA, dF);
+        return vocabReply(m, said, lang, dH, dA, dF);
     }
 
     // Prompt untuk LLM lewat proxy

@@ -35,7 +35,8 @@ static float HudX = 60.f, HudY = 220.f, HudLine = 34.f, HudScale = 0.9f;
 static int   UseFontOrient = 1, FontOrient = 1;     // FontOrient: 0=tengah, 1=kiri, 2=kanan
 static float HudYFrac = 0.28f;                           // 0.0 = atas layar, 1.0 = bawah (default di atas biar nggak ketutup keyboard)
 static int   UseMPKeyboard = 1, AutoOpenKeyboard = 0;      // AutoOpenKeyboard=0: keyboard dibuka manual lewat tombol chat
-static int   UseMPChatTrigger = 1, PassChatToMP = 0, DrawBeforeHud = 1;   // pinjam keyboard dari libMP32.so
+static int   UseMPChatTrigger = 1, PassChatToMP = 0, DrawBeforeHud = 1;
+static int   UseDeathCheck = 1, HealthOffset = 0x540;      // chat otomatis hilang kalau ped mati (offset darah = dugaan dari struktur PC)   // pinjam keyboard dari libMP32.so
 static int   HudAuto = 1, UseFontWrap = 1;          // HudAuto: posisi teks otomatis dari ukuran layar
 static int   g_scrW = 0, g_scrH = 0;
 static const bool  ENABLE_CRIME = false;          // todong/copet: nyalakan setelah aksi ped selesai dibuat
@@ -60,9 +61,9 @@ static bool TryWrite(const std::string& path) {
     if (!f) return false;
     fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
                "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n"
-               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nKeyboardAuto=%d\nHudYFrac=%.2f\nUseMPChatTrigger=%d\nPassChatToMP=%d\nDrawBeforeHud=%d\n",
+               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nKeyboardAuto=%d\nHudYFrac=%.2f\nUseMPChatTrigger=%d\nPassChatToMP=%d\nDrawBeforeHud=%d\nUseDeathCheck=%d\nHealthOffset=%d\n",
             PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender,
-            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac, UseMPChatTrigger, PassChatToMP, DrawBeforeHud);
+            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac, UseMPChatTrigger, PassChatToMP, DrawBeforeHud, UseDeathCheck, HealthOffset);
     fclose(f);
     return true;
 }
@@ -73,7 +74,7 @@ static void LoadConfig() {
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
-    char line[256]; bool hasNew = false, hasKb = false, hasY = false, hasTrig = false;
+    char line[256]; bool hasNew = false, hasKb = false, hasY = false, hasTrig = false, hasDeath = false;
     while (fgets(line, sizeof line, f)) {
         char k[64], v[160];
         if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
@@ -91,6 +92,8 @@ static void LoadConfig() {
             else if (key == "UseMPChatTrigger") { UseMPChatTrigger = atoi(val.c_str()); hasTrig = true; }
             else if (key == "PassChatToMP")     PassChatToMP = atoi(val.c_str());
             else if (key == "DrawBeforeHud")    DrawBeforeHud = atoi(val.c_str());
+            else if (key == "UseDeathCheck")    { UseDeathCheck = atoi(val.c_str()); hasDeath = true; }
+            else if (key == "HealthOffset")     HealthOffset = atoi(val.c_str());
             else if (key == "HudYFrac")         { HudYFrac = (float)atof(val.c_str()); hasY = true; }
             else if (key == "HudY")          HudY = (float)atof(val.c_str());
             else if (key == "HudLine")       HudLine = (float)atof(val.c_str());
@@ -103,7 +106,7 @@ static void LoadConfig() {
         }
     }
     fclose(f);
-    if (!hasNew || !hasKb || !hasY || !hasTrig) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
+    if (!hasNew || !hasKb || !hasY || !hasTrig || !hasDeath) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
 }
 
 // ============================ Baca memori game dengan aman ============================
@@ -269,6 +272,42 @@ static bool g_kbOpen = false;
 struct Reply { uint32_t id; std::string text; int dHappy, dAnger, dFear; std::string action; };
 static std::mutex qmx; static std::queue<Reply> replies;
 
+
+// ---- Gender ped dari ID skin (cowok -> nama cowok, cewek -> nama cewek) ----
+static int ReadModel(void* ped) {                                    // CEntity::m_nModelIndex (offset 0x22, dugaan dari struktur PC)
+    uint16_t mdl = 0xFFFF;
+    if (!ped || !SafeRead((uint8_t*)ped + 0x22, &mdl, 2) || mdl > 20000) return -1;
+    return (int)mdl;
+}
+static int g_genderLogs = 0;
+static PedMind& MindOf(void* ped) {
+    uint32_t id = (uint32_t)(uintptr_t)ped;
+    int model = ReadModel(ped);
+    auto it = brain.minds.find(id);
+    if (it != brain.minds.end() && model >= 0 && it->second.model != model) brain.minds.erase(it);   // alamat dipakai ulang oleh ped lain
+    bool isNew = brain.minds.find(id) == brain.minds.end();
+    brain.genderHint = Vocab::GenderOfSkin(model); brain.modelHint = model;
+    PedMind& m = brain.get(id);
+    if (isNew && g_genderLogs++ < 30)
+        Mark("PED baru: skin=" + std::to_string(model) + " gender=" + (m.gender == 2 ? "cewek" : m.gender == 1 ? "cowok" : "?") + " nama=" + m.name);
+    return m;
+}
+
+
+// ---- Deteksi ped mati (darah <= 0). Baru dipercaya setelah offset terbukti masuk akal (>=3 ped dengan darah 1..400). ----
+static int g_healthSeen = 0, g_healthLogs = 0;
+static bool IsDead(void* ped) {
+    if (!UseDeathCheck || !ped) return false;
+    float h = 0;
+    if (!SafeRead((uint8_t*)ped + HealthOffset, &h, 4) || !std::isfinite(h)) return false;
+    if (h > 1.f && h < 400.f) {
+        if (g_healthSeen < 50) g_healthSeen++;
+        if (g_healthLogs++ < 6) { char b[96]; snprintf(b, sizeof b, "Darah ped terbaca: %.0f (offset 0x%x)", h, HealthOffset); Mark(b); }
+        return false;
+    }
+    return h <= 0.5f && g_healthSeen >= 3;
+}
+
 static void LogChat(const std::string& s) {
     std::string f = VIS_DIR + "chat_log.txt";
     FILE* fp = fopen(f.c_str(), "a");
@@ -422,7 +461,18 @@ static void FrameLogic() {
     for (void* p : g_peds) {
         CVector q; if (!EntityPos(p, q)) continue;
         float d = std::hypot(q.x - pp.x, q.y - pp.y);
-        if (d < best) { best = d; nearest = p; }
+        if (d < best && !IsDead(p)) { best = d; nearest = p; }
+    }
+
+    // Lawan bicara mati -> semua fitur chat langsung hilang
+    if (talkPed && IsDead(talkPed)) {
+        static int deathLogs = 0;
+        if (deathLogs++ < 20) Mark("Ped meninggal -> chat ditutup: " + brain.get(talkId).name);
+        if (VK_Close && VK_IsOpen && VK_IsOpen()) { KbCrumb("kb: Close (ped mati)"); VK_Close(); }
+        bubbleTime = 0; g_waiting = false; kbRearm = 0; kbArmed = false; g_kbOpen = false;
+        { std::lock_guard<std::mutex> g(qmx); while (!replies.empty()) replies.pop(); }
+        { std::lock_guard<std::mutex> g(kbMx); kbSaid.clear(); kbDone = false; kbCancelled = false; }
+        EndTalk();
     }
 
     // Kunci lawan bicara selama obrolan masih berlangsung (supaya balasan nggak "hilang" karena ganti target)
@@ -436,7 +486,7 @@ static void FrameLogic() {
 
     // sapaan/olokan spontan
     if (!locked && nearest && best < 8.f && g_frame % 600 == 0) {
-        PedMind& m = brain.get((uint32_t)(uintptr_t)nearest);
+        PedMind& m = MindOf(nearest);
         Act a = brain.decide(m, best, 0, 0, false);
         if (a == Act::Greet || a == Act::Insult) {
             if (talkPed != nearest) EndTalk();
@@ -451,7 +501,7 @@ static void FrameLogic() {
     if (canTalk && talkPed != target) {                              // mulai ngobrol dengan ped baru
         EndTalk();
         talkPed = target; talkId = (uint32_t)(uintptr_t)target;
-        PedMind& m = brain.get(talkId);
+        PedMind& m = MindOf(target);
         bool id = m.lang == Lang::ID;
         SetBubble(m.name + ": " + (m.knowsPlayer ? (id ? "Eh, lu lagi." : "Oh, it's you again.") : (id ? "Ya?" : "Yeah?")));
         Act_FaceAndStop(talkPed); Act_TalkGesture(talkPed, true);    // hadap player, diam, gesture bicara
@@ -494,6 +544,7 @@ static void FrameLogic() {
           g_waiting = false;
           void* ped = nullptr;
           for (void* p : g_peds) if ((uint32_t)(uintptr_t)p == r.id) { ped = p; break; }
+          if (ped && IsDead(ped)) { bubbleTime = 0; continue; }
           ExecuteAction(ped, r.action, m);                           // bertindak sesuai yang dikatakan player
       } }
     if (g_frame % 45 == 0) PollChatFile();
