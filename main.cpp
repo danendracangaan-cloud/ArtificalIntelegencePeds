@@ -350,7 +350,8 @@ static void ExecuteAction(void* ped, const std::string& act, PedMind& m) {
 static void SendChat(const std::string& said) {
     if (said.empty() || !talkId) return;
     PedMind& m = brain.get(talkId);
-    m.lang = DetectLang(said);                                       // bahasa terakhir player (default Inggris)
+    { bool conf = false; Lang dl = DetectLang2(said, conf);          // bahasa terakhir player; kalau tidak yakin, tetap pakai bahasa sebelumnya
+      if (conf) { m.lang = dl; brain.defaultLang = dl; } }
     m.remember("P", said); m.timesTalked++;
     std::string prompt = brain.buildPrompt(m, said, Game_PlayerMoney(), Game_Hour());
     uint32_t id = talkId; PedMind snap = m;

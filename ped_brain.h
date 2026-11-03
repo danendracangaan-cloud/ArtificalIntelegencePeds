@@ -17,28 +17,26 @@ enum class Act   { None, Greet, Insult, Rob, Pickpocket };
 enum class Lang   { EN, ID, ES };
 enum class Intent { None, Follow, Stop, Leave, Dance, HandsUp, Wave, Flee, Fight };
 
-inline std::string LowerPad(const std::string& s) {
-    std::string t = " ";
-    for (char c : s) t += (char)tolower((unsigned char)c);
-    t += " ";
-    return t;
-}
-inline bool HasAny(const std::string& t, std::initializer_list<const char*> ks) {
-    for (auto k : ks) if (t.find(k) != std::string::npos) return true;
-    return false;
-}
-// Default Inggris. Indonesia/Spanyol hanya kalau ada penanda kuat.
-inline Lang DetectLang(const std::string& said) {
-    std::string t = LowerPad(said);
+inline std::string LowerPad(const std::string& s) { return Vocab::NormText(s); }
+inline bool HasAny(const std::string& t, std::initializer_list<const char*> ks) { return Vocab::HasAnyN(t, ks); }
+
+// Deteksi bahasa. confident=false kalau tidak ada penanda sama sekali (pakai bahasa terakhir, jangan balik ke Inggris).
+inline Lang DetectLang2(const std::string& said, bool& confident) {
+    std::string t = Vocab::NormText(said);
+    static const char* const IDW[] = {"gua","gue","gw","lu","lo","elu","loe","aku","saya","kamu","kau","anda","dia","kita","kami","mereka","apa","siapa","kenapa","mengapa","gimana","bagaimana","kapan","dimana","berapa","yang","dan","atau","ini","itu","sama","juga","lagi","udah","sudah","belum","mau","bisa","boleh","jangan","tolong","makasih","terima","halo","hai","selamat","pagi","siang","sore","malam","bang","mas","mbak","dong","sih","nih","deh","kok","aja","banget","nggak","ngga","gak","tidak","bukan","punya","ada","kerja","makan","minum","tidur","pergi","pulang","ikut","bawa","beli","jual","uang","duit","rumah","mobil","motor","polisi","teman","cewek","cowok","cantik","ganteng","sayang","cinta","maaf","iya","enggak","emang","kayak","kayaknya","masa","gitu","gini","begitu","begini","cuma","doang","ayo","yuk","lah","kan","toh","dulu","nanti","tadi","besok","kemarin","sekarang","orang","bosen","capek","sedih","senang","marah","takut","laper","lapar","suka","kenal","namanya","umur","dari","mana"};
+    static const char* const ESW[] = {"hola","gracias","amigo","como","cómo","qué","tal","dinero","donde","dónde","adiós","adios","buenos","buenas","favor","quién","quien","puedes","necesito","hablas","vete","tengo","hambre","quiero","estoy","eres","pero","también","ayuda","usted","nombre","llamas","cuántos","cuantos","dime","oye","vamos","bueno","muy","mucho","señor","hermano","compa","jefe","casa","carro","coche","porque","para","donde","tienes","soy"};
+    static const char* const ENW[] = {"the","you","your","are","what","how","why","when","where","who","do","does","did","is","am","i","me","my","it","to","and","of","in","for","that","this","can","could","would","will","hello","hi","hey","yo","thanks","thank","please","tell","like","love","want","need","get","have","has","go","with","not","dont","im","ive","its","let","lets","here","there","just","know","think","about","really","good","bad","man","dude","nice","cool","sorry","help","money","car","food"};
+    int en = 0;
+    for (const char* w : ENW) if (t.find(" " + std::string(w) + " ") != std::string::npos) en++;
     int id = 0, es = 0;
-    for (const char* k : {" gua ", " gue ", " lu ", " elu ", " aku ", " kamu ", " nggak ", " gak ", " tidak ", " dong ", " kok ", " banget ", " halo ", " makasih ", " terima kasih ", " siapa ", " dimana ", " gimana ", " yang ", " apa ", " mau ", " bisa ", " uang ", " duit ", " lagi ", " ikut ", " pergi ", " tolong ", " sama "})
-        if (t.find(k) != std::string::npos) id++;
-    for (const char* k : {" hola ", " gracias ", " amigo ", " como ", " cómo ", " qué ", " que tal ", " dinero ", " donde ", " dónde ", " adiós ", " adios ", " buenos ", " por favor ", " quién ", " puedes ", " necesito ", " hablas ", " vete ", " sígueme ", " sigueme ", " tengo ", " hambre ", " quiero ", " estoy ", " eres ", " pero ", " también ", " ayúdame ", " amiga "})
-        if (t.find(k) != std::string::npos) es++;
-    if (id > es && id >= 1) return Lang::ID;
-    if (es > id && es >= 1) return Lang::ES;
+    for (const char* w : IDW) if (t.find(" " + std::string(w) + " ") != std::string::npos) id++;
+    for (const char* w : ESW) if (t.find(" " + std::string(w) + " ") != std::string::npos) es++;
+    confident = (id > 0 || es > 0 || en > 0);
+    if (id > 0 && id >= es && id >= en) return Lang::ID;
+    if (es > 0 && es > id && es >= en) return Lang::ES;
     return Lang::EN;
 }
+inline Lang DetectLang(const std::string& said) { bool c; return DetectLang2(said, c); }
 inline Intent DetectIntent(const std::string& said) {
     std::string t = LowerPad(said);
     if (HasAny(t, {"hands up", "put your hands", "put em up", "angkat tangan", "manos arriba"})) return Intent::HandsUp;
@@ -113,6 +111,7 @@ public:
     std::unordered_map<uint32_t, PedMind> minds;
     std::mt19937 rng{std::random_device{}()};
     int genderHint = 0, modelHint = -1;            // diisi main.cpp sebelum get() untuk ped baru
+    Lang defaultLang = Lang::EN;                   // bahasa terakhir yang dipakai player (ped baru ikut)
 
     float rnd() { return std::uniform_real_distribution<float>(0, 1)(rng); }
 
@@ -120,7 +119,7 @@ public:
         auto it = minds.find(id);
         if (it != minds.end()) return it->second;
         PedMind m; m.id = id;
-        m.gender = genderHint; m.model = modelHint;
+        m.gender = genderHint; m.model = modelHint; m.lang = defaultLang;
         m.name = Vocab::NameFor(genderHint, rng);
         float r = rnd();
         m.trait = r < .35f ? Trait::Friendly : r < .55f ? Trait::Grumpy : r < .70f ? Trait::Criminal
@@ -414,7 +413,8 @@ public:
 
     // ---------- Dispatcher: bahasa + maksud + mood ----------
     std::string offlineChat(const PedMind& m, const std::string& said, int& dH, int& dA, int& dF, std::string& action) {
-        Lang lang = DetectLang(said);
+        bool conf = false; Lang dl = DetectLang2(said, conf);
+        Lang lang = conf ? dl : m.lang;                // tidak yakin -> pakai bahasa terakhir
         Intent in = DetectIntent(said);
         action = "none"; dH = dA = dF = 0;
         if (in != Intent::None) { if (in == Intent::HandsUp || in == Intent::Fight) dF = 5; return intentReply(m, in, lang, action); }

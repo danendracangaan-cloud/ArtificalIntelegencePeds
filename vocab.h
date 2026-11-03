@@ -76,29 +76,29 @@ POOL(EN_sp_insult, "Nice outfit. Did you lose a bet?","Out of my way, loser!","W
 
 
 // ===================== INDONESIA =====================
-POOL(ID_greet, "Halo juga, bro!","Yo, ada apa?","Eh, orang baru ya?","Hai! Lagi jalan-jalan?","Woi, apa kabar?","Halo, halo!","Pagi, bro.","Wih, ada tamu.","Santai aja, gua {n}.","Halo! Cuacanya enak ya.","Hei, lu nyasar?","Salam kenal, bro!","Ada yang bisa gua bantu?","Yoi! Apa kabar?","Eh, halo! Gua lagi ngelamun tadi.","Hai, hai!","Mantap, ada yang nyapa.","Hola, amigo! Eh, maksudnya halo.","Oh hai. Gua kira lu patung.","Halo juga, sob.")
+POOL(ID_greet, "Halo juga, bro!","Yo, ada apa?","Eh, orang baru ya?","Hai! Lagi jalan-jalan?","Woi, apa kabar?","Halo, halo!","Pagi, bro.","Wih, ada tamu.","Santai aja, gua {n}.","Halo! Cuacanya enak ya.","Hei, lu nyasar?","Salam kenal, bro!","Ada yang bisa gua bantu?","Yoi! Apa kabar?","Eh, halo! Gua lagi ngelamun tadi.","Hai, hai!","Mantap, ada yang nyapa.","Hola, amigo! Eh, maksudnya halo.","Oh hai. Gua kira lu patung.","Halo juga, sob.","Yo, ada perlu apa, bro?","Halo, halo, selamat datang di trotoar gua.","Eh, lu lagi ngapain di sini?","Wih, muka baru nih.","Halo juga! Santai aja, gua nggak gigit.","Hai! Gua baru aja mikirin lu. Bohong sih.","Pagi, siang, sore, malam, pokoknya halo.","Oh, hai. Gua kira lu orang lain.","Salam kenal ya, jangan malu-malu.","Hei! Ada yang bisa dibantu, bos?","Eh, halo. Lu keliatan kayak orang baik.","Yo, apa kabar dunia?","Selamat datang, sob!","Hai, gua {n}. Lu siapa?","Waduh, ada orang. Halo!","Halo juga. Cuacanya lumayan ya?","Hei, lu yang tadi lewat sini kan?","Gimana-gimana? Ada kabar baru?")
 POOL(ID_greet_angry, "Apa? Gua lagi nggak mood.","Cepetan, gua sibuk.","Hmph. Ada perlu apa?","Mau apa lu?","Jangan ganggu gua.","Gua lagi kesel. Singkat aja.","Ngapain liat-liat?","Nggak ada waktu buat basa-basi.")
 POOL(ID_greet_scared, "H-halo... lu nggak bakal macam-macam kan?","Halo. Gua cuma lewat doang, bro.","Eh! Lu bikin gua kaget.","H-hai... aman kan di sini?","Halo... jangan deket-deket ya.","Gua nggak mau masalah, serius.")
 POOL(ID_greet_happy, "Halo juga! Hari yang bagus ya!","Woy! Senang ketemu lu!","Hai! Ada yang bisa gua bantu?","Wih, mood gua lagi bagus nih! Halo!","Yoo, sob! Gimana kabarnya?","Hai hai! Hari ini indah banget!","Halo! Lu bikin hari gua makin asik!")
-POOL(ID_howare_angry, "Buruk. Hari ini bikin emosi terus.","Jangan nanya, lagi bete banget gua.","Kesel. Udah itu aja.","Nggak baik. Nggak usah dibahas.","Rasanya pengen ngamuk. Serius.")
-POOL(ID_howare_scared, "Agak tegang, bro. Daerah ini kadang nggak aman.","Gua... baik-baik aja. Cuma waspada.","Gemeteran gua. Serius.","Jantung gua deg-degan terus.","Nggak tenang gua, bro.")
-POOL(ID_howare_happy, "Mantap banget hari ini!","Baik banget, bro! Lu sendiri gimana?","Lagi bagus nih, nggak ada yang bikin pusing.","Alhamdulillah, lancar jaya!","Luar biasa! Gua nemu duit seribu tadi.","Seneng banget gua hari ini!")
-POOL(ID_howare, "Biasa aja, bro. Hidup jalan terus.","Yaa gitu-gitu aja. Lu sendiri?","Lumayan lah, masih bisa napas.","Capek, tapi masih bisa ketawa.","Nggak buruk, nggak bagus juga.","Hidup itu kayak sinyal, kadang ada kadang nggak.","Baik. Kaki gua pegel doang.","Santai aja. Lu gimana?")
-POOL(ID_name, "Nama gua {n}. Lu sendiri?","Panggil aja gua {n}, bro.","{n}. Orang sini, udah lama nongkrong.","Gua {n}. Kenapa, mau bikin buku?","{n}. Jangan dilupain ya.","Nama gua {n}. Salam kenal!","Orang-orang manggil gua {n}.","{n}. Ngomong-ngomong lu siapa?")
-POOL(ID_thanks, "Sama-sama, bro!","Santai aja.","Hehe, bisa aja lu.","Nggak masalah!","Siap, kapan-kapan lagi ya.","Gua senang bisa bantu.","Udah, jangan sungkan.","Sama-sama! Nah gitu dong, yang sopan.")
-POOL(ID_bye, "Oke, hati-hati di jalan.","Yoi, sampai ketemu lagi!","Cabut aja, gua juga mau jalan.","Dadah, bro!","Jaga diri ya.","Sampai jumpa, sob.","Oke, jangan lama-lama ilang.","Hati-hati ya, jangan nyasar.")
+POOL(ID_howare_angry, "Buruk. Hari ini bikin emosi terus.","Jangan nanya, lagi bete banget gua.","Kesel. Udah itu aja.","Nggak baik. Nggak usah dibahas.","Rasanya pengen ngamuk. Serius.","Kesel gua dari pagi, jangan tambahin.","Buruk. Jangan nanya lagi.","Lagi pengen nonjok tembok, jadi nggak baik.","Nggak baik, dan lu nggak bantu.")
+POOL(ID_howare_scared, "Agak tegang, bro. Daerah ini kadang nggak aman.","Gua... baik-baik aja. Cuma waspada.","Gemeteran gua. Serius.","Jantung gua deg-degan terus.","Nggak tenang gua, bro.","Gua gelisah banget, bro.","Tangan gua gemeteran dari tadi.","Perasaan gua nggak enak terus.","Nggak tenang, kayak ada yang ngikutin.")
+POOL(ID_howare_happy, "Mantap banget hari ini!","Baik banget, bro! Lu sendiri gimana?","Lagi bagus nih, nggak ada yang bikin pusing.","Alhamdulillah, lancar jaya!","Luar biasa! Gua nemu duit seribu tadi.","Seneng banget gua hari ini!","Lagi bagus banget, sumpah!","Hari ini gua lagi di atas awan!","Senang banget, bro, entah kenapa!","Mood gua lagi tinggi-tingginya!")
+POOL(ID_howare, "Biasa aja, bro. Hidup jalan terus.","Yaa gitu-gitu aja. Lu sendiri?","Lumayan lah, masih bisa napas.","Capek, tapi masih bisa ketawa.","Nggak buruk, nggak bagus juga.","Hidup itu kayak sinyal, kadang ada kadang nggak.","Baik. Kaki gua pegel doang.","Santai aja. Lu gimana?","Gini-gini aja, bro. Lu sendiri?","Lumayan lah, belum mati.","Kadang bagus, kadang nggak. Hari ini ya gitu deh.","Baik-baik aja, cuma dompet yang nggak baik.","Alhamdulillah masih bisa nongkrong.","Nggak ada yang spesial, bro.","Kayak biasa. Capek tapi jalan terus.","Cukup baik buat ngobrol sama lu.","Gua oke. Perut gua yang nggak.","Hidup lagi lempeng-lempeng aja.","Jalan terus, bro, mau gimana lagi.","Mendingan dari kemarin.")
+POOL(ID_name, "Nama gua {n}. Lu sendiri?","Panggil aja gua {n}, bro.","{n}. Orang sini, udah lama nongkrong.","Gua {n}. Kenapa, mau bikin buku?","{n}. Jangan dilupain ya.","Nama gua {n}. Salam kenal!","Orang-orang manggil gua {n}.","{n}. Ngomong-ngomong lu siapa?","Gua {n}, bukan siapa-siapa.","Orang manggil gua {n}, tapi lu boleh manggil apa aja.","Nama gua {n}. Panjang ceritanya.","{n}! Inget ya, nanti gua tagih.","Gua {n}. Kalau lupa, tanya lagi aja.","Panggil {n} aja, nggak usah formal.","{n}, anak sini. Lu?","Namanya {n}. Bagus kan? Orang tua gua yang milih.")
+POOL(ID_thanks, "Sama-sama, bro!","Santai aja.","Hehe, bisa aja lu.","Nggak masalah!","Siap, kapan-kapan lagi ya.","Gua senang bisa bantu.","Udah, jangan sungkan.","Sama-sama! Nah gitu dong, yang sopan.","Sama-sama, bro, santai aja.","Gua yang makasih udah ngajak ngobrol.","Ah, jangan sungkan.","Nggak usah makasih, cukup traktir kopi.","Sip, sama-sama!","Gua cuma bantu dikit.","Hehe, kapan-kapan gantian ya.","Wah, jarang ada yang bilang makasih.","Udah, kita kan temen.","Siap, bos, kapan aja.")
+POOL(ID_bye, "Oke, hati-hati di jalan.","Yoi, sampai ketemu lagi!","Cabut aja, gua juga mau jalan.","Dadah, bro!","Jaga diri ya.","Sampai jumpa, sob.","Oke, jangan lama-lama ilang.","Hati-hati ya, jangan nyasar.","Oke, hati-hati ya, jangan ngebut.","Sampai nanti, bro!","Duluan ya! Jangan kangen.","Yoi, ketemu lagi ntar.","Dadah! Salam buat keluarga.","Jaga diri, sob.","Pamit dulu? Oke, hati-hati.","Sana gih, jangan lupa pulang.","Bye bye! Jangan nyasar.","Sampai ketemu lagi, kawan.")
 POOL(ID_sorry, "Yaudah, nggak apa-apa.","Santai, gua maafin.","Oke, kita impas.","Udah lupain aja.","Makasih udah minta maaf.","Nggak masalah, bro.")
 POOL(ID_yes, "Nah, itu dia!","Setuju gua!","Betul banget.","Yoi, sepakat.","Mantap, kita sepemikiran.","Bagus, bagus.")
 POOL(ID_no, "Yah, kok gitu?","Yaudah, terserah lu.","Wah, sayang banget.","Oke, gua nggak maksa.","Hmm, rugi lu.","Yaudah deh.")
-POOL(ID_money, "Duit? Gua juga lagi seret nih.","Lagi nggak ada, bro. Coba tanya orang lain.","Gua aja kekurangan!","Dompet gua lagi diet.","Minjem duit? Gua trauma.","Cuma ada receh dan permen.","Kerja dong, bro. Eh, bercanda.","Gua lagi nabung buat makan.","Duit itu fana, bro. Tapi tetep butuh.")
-POOL(ID_directions, "Wah, gua kurang tau daerah situ.","Lurus aja terus, nanti juga ketemu. Kayaknya.","Gua cuma tau jalan sekitar sini, bro.","Belok kiri, terus kanan, terus... lupa.","Tanya orang lain deh, gua bukan GPS.","Ikutin bau tacos, pasti ketemu.","Sebelah sana, deket yang itu, yang ada itunya.","Gua juga sering nyasar.")
-POOL(ID_love, "Hahaha, lu ada-ada aja!","Wah, jangan bikin gua baper, bro.","Hehe, gombalan lu lumayan lucu.","Cieee.","Gua udah ada yang punya. Namanya tacos.","Pelan-pelan dong, baru kenal.","Aduh, gua jadi malu.","Traktir makan dulu baru ngomong.")
-POOL(ID_compliment, "Makasih, gua usaha.","Hehe, gua terima.","Lu juga keren, bro.","Wah, jadi malu gua.","Bisa aja lu!","Akhirnya ada yang ngerti.","Pujian lu bikin hari gua bagus.","Makasih, bro. Serius.")
-POOL(ID_insult, "Mulut lu, dijaga!","Ngaca dulu, baru ngatain orang!","Santai dikit napa, bro.","Wah, kasar banget.","Gua nggak salah apa-apa sama lu.","Hidup lu stres banget kayaknya.","Ngomong sekali lagi, gua bikin lu nyesel!","Nggak ada sopan-santunnya lu.","Yaelah, bawa-bawa gua ke hari buruk lu.","Gua pergi aja deh kalau lu begitu.")
-POOL(ID_threat, "Wah, santai bro. Jangan cari masalah.","Gua panggil polisi nih kalau lu ngancem terus!","J-jangan! Gua cuma lewat doang!","Coba aja kalau berani.","Tolong... jangan sakitin gua!","Lu pikir gua takut? Hah!","Hei hei, ngomong yang bener.","Oke oke, gua pergi sekarang!")
-POOL(ID_joke, "Kenapa ayam nyebrang? Biar sampai seberang.","Kenapa sapi nggak bisa main internet? Takut digembok.","Apa bedanya lu sama kulkas? Kulkas nggak ngomong.","Ikan apa yang bisa nyanyi? Ikan paus. Paus lagi nyanyi.","Gua tuh orangnya setia. Kayak hutang.","Kenapa angka tiga takut? Soalnya tiga dua satu.","Apa yang lebih panjang dari sepuluh meter? Sebelas meter.","Gua bukan pelit, gua hemat. Bedanya setipis tisu.")
+POOL(ID_money, "Duit? Gua juga lagi seret nih.","Lagi nggak ada, bro. Coba tanya orang lain.","Gua aja kekurangan!","Dompet gua lagi diet.","Minjem duit? Gua trauma.","Cuma ada receh dan permen.","Kerja dong, bro. Eh, bercanda.","Gua lagi nabung buat makan.","Duit itu fana, bro. Tapi tetep butuh.","Gua lagi bokek berat, bro, serius.","Minjem duit? Gua aja minjem.","Duit gua tinggal di saku celana yang kemarin.","Nggak ada, bro, tanggal tua.","Gua kasih doa aja ya, gratis.","Dompet gua isinya struk doang.","Lu salah orang, gua lebih miskin dari lu.","Kerja dulu sana, nanti gua traktir.","Duit? Gua cuma punya mimpi.","Tanya bank, bukan gua.","Gua nabung buat beli sandal baru.","Duit itu cuma kertas, tapi kok susah dicari ya.")
+POOL(ID_directions, "Wah, gua kurang tau daerah situ.","Lurus aja terus, nanti juga ketemu. Kayaknya.","Gua cuma tau jalan sekitar sini, bro.","Belok kiri, terus kanan, terus... lupa.","Tanya orang lain deh, gua bukan GPS.","Ikutin bau tacos, pasti ketemu.","Sebelah sana, deket yang itu, yang ada itunya.","Gua juga sering nyasar.","Wah, gua juga nggak tau, bro.","Lurus terus, belok kanan di pohon besar.","Tanya orang lain deh, gua gampang nyasar.","Ikutin aja jalan ini, nanti juga ketemu.","Kayaknya deket sini, tapi gua nggak yakin.","Coba cek peta, jangan tanya gua.","Belok kiri dua kali, terus pasrah.","Setau gua sih ke arah sana. Setau gua lho.","Jauh sih, naik apa lu?","Deket kok, tinggal jalan tiga menit. Atau tiga puluh.","Gua cuma tau warung di ujung jalan.","Ikutin kerumunan, biasanya ke sana.")
+POOL(ID_love, "Hahaha, lu ada-ada aja!","Wah, jangan bikin gua baper, bro.","Hehe, gombalan lu lumayan lucu.","Cieee.","Gua udah ada yang punya. Namanya tacos.","Pelan-pelan dong, baru kenal.","Aduh, gua jadi malu.","Traktir makan dulu baru ngomong.","Waduh, gombalan lu level berapa nih?","Jangan bikin gua salting, bro.","Gua tersanjung, tapi gua bingung.","Hahaha, lu lucu juga.","Pelan-pelan, kenalan dulu.","Gua udah punya cinta, namanya nasi goreng.","Wih, berani juga lu.","Aduh, mukanya jadi merah nih.","Hati gua udah diisi kopi.","Gombalannya klasik tapi lumayan.")
+POOL(ID_compliment, "Makasih, gua usaha.","Hehe, gua terima.","Lu juga keren, bro.","Wah, jadi malu gua.","Bisa aja lu!","Akhirnya ada yang ngerti.","Pujian lu bikin hari gua bagus.","Makasih, bro. Serius.","Wah, makasih, hari gua jadi bagus.","Lu juga keren, jujur.","Hehe, gua jadi geer.","Bisa aja lu, bro.","Pujian lu bikin gua melayang.","Makasih, gua catat di buku harian.","Lu orangnya baik ya.","Gua tersipu nih.","Wow, tumben ada yang muji.","Terima kasih, jangan berhenti ya.")
+POOL(ID_insult, "Mulut lu, dijaga!","Ngaca dulu, baru ngatain orang!","Santai dikit napa, bro.","Wah, kasar banget.","Gua nggak salah apa-apa sama lu.","Hidup lu stres banget kayaknya.","Ngomong sekali lagi, gua bikin lu nyesel!","Nggak ada sopan-santunnya lu.","Yaelah, bawa-bawa gua ke hari buruk lu.","Gua pergi aja deh kalau lu begitu.","Eh, jaga omongan lu.","Lu ngomong apa tadi? Ulangin.","Mulut lu perlu disekolahin.","Gua nggak ada urusan sama lu, kenapa nyolot?","Hati-hati ngomong, bro.","Lagi nyari masalah ya?","Santai napa, hidup lu stres amat.","Lu kayaknya salah bangun tidur.","Ngatain orang kok semangat banget.","Hari lu pasti buruk, ya. Ngerti kok.","Gua diem bukan berarti takut.","Lu bikin gua sedih, tau nggak?")
+POOL(ID_threat, "Wah, santai bro. Jangan cari masalah.","Gua panggil polisi nih kalau lu ngancem terus!","J-jangan! Gua cuma lewat doang!","Coba aja kalau berani.","Tolong... jangan sakitin gua!","Lu pikir gua takut? Hah!","Hei hei, ngomong yang bener.","Oke oke, gua pergi sekarang!","Wah wah, santai dong, jangan gitu.","Gua nggak mau ribut, serius.","Jangan nyakitin gua, gua cuma lewat!","Coba aja, gua nggak takut!","Lu serius? Gua panggil polisi nih!","Tenang, tenang, kita ngobrol baik-baik.","Gua nggak punya salah sama lu!","Oke, oke, gua nyerah, jangan apa-apain!","Berani lu sama gua? Hah?","Jangan macem-macem ya.","Gua pergi sekarang, jangan ikutin.")
+POOL(ID_joke, "Kenapa ayam nyebrang? Biar sampai seberang.","Kenapa sapi nggak bisa main internet? Takut digembok.","Apa bedanya lu sama kulkas? Kulkas nggak ngomong.","Ikan apa yang bisa nyanyi? Ikan paus. Paus lagi nyanyi.","Gua tuh orangnya setia. Kayak hutang.","Kenapa angka tiga takut? Soalnya tiga dua satu.","Apa yang lebih panjang dari sepuluh meter? Sebelas meter.","Gua bukan pelit, gua hemat. Bedanya setipis tisu.","Kenapa kuburan nggak pernah sepi? Soalnya banyak yang antri.","Apa bedanya kopi sama jodoh? Kopi bisa diseduh, jodoh susah diseduh.","Kenapa gajah nggak bisa main HP? Jarinya kegedean.","Ada orang jual bubur, tapi jualnya malem. Namanya bubur lembur.","Kenapa programmer suka kopi? Biar nggak kena error pas ngantuk.","Kenapa polisi tidur nggak bisa nangkep maling? Soalnya lagi tidur.","Ayam goreng lagi sedih, soalnya dia merasa digoreng terus.","Siapa yang paling sabar? Tukang parkir. Nunggu terus.","Gua tuh nggak malas, cuma hemat energi.","Kenapa jam dinding nggak pernah capek? Soalnya selalu digantung.")
 POOL(ID_weather, "Cuacanya aneh akhir-akhir ini, ya?","Panas banget. Kenapa sih?","Kayaknya mau hujan. Lutut gua bilang gitu.","Langitnya cerah, mantap.","Dingin-dingin gini enaknya makan mi.","Hujan bikin kota kerasa lebih bersih.","Cuacanya cocok buat tidur. Selalu cocok buat tidur.","Awannya mirip bebek hari ini.")
-POOL(ID_food, "Gua laper banget, serius.","Pizza jawabannya. Pertanyaannya nggak penting.","Tacos. Selalu tacos.","Kopi dulu, baru bisa mikir.","Hot dog pinggir jalan itu gourmet.","Burger enak, tapi mi lebih enak.","Gua bisa makan sepiring sendirian.","Ayam goreng itu makanan terbaik. Debat sama gua.")
+POOL(ID_food, "Gua laper banget, serius.","Pizza jawabannya. Pertanyaannya nggak penting.","Tacos. Selalu tacos.","Kopi dulu, baru bisa mikir.","Hot dog pinggir jalan itu gourmet.","Burger enak, tapi mi lebih enak.","Gua bisa makan sepiring sendirian.","Ayam goreng itu makanan terbaik. Debat sama gua.","Gua ngidam nasi goreng, bro.","Makan apa ya enaknya? Semua kayaknya enak.","Kopi dulu sebelum mikir apa pun.","Pizza itu makanan kemenangan.","Gua lapar dari tadi pagi, serius.","Ada warung enak di deket sini, kalau gua inget.","Mie instan itu penyelamat akhir bulan.","Taco itu makanan para dewa.","Gua bisa makan lima porsi, sumpah.","Sambel dulu, baru makanan.","Es teh manis itu ibadah.")
 POOL(ID_music, "Gua suka rap sama rock, semua suka.","Nyalain radio, bro, pasti ada lagu enak.","Gua nyanyi di kamar mandi. Tetangga protes.","Musik bikin semuanya lebih baik.","Gua nggak bisa nari, tapi gua berani.","Lagu favorit gua yang lagi main sekarang.","Lagu lama itu emas, bro.","Bass itu detak jantung kota.")
 POOL(ID_cars, "Mobil lu keren. Punya gua kayak kursi malas jalan.","Bensin mahal, bro. Perampokan di siang bolong.","Gua pernah nyetir mundur tiga kilometer.","Lowrider itu seni berjalan.","Mobil gua penuh karakter. Kebanyakan karat.","Motor lebih asik, nggak macet.","Parkir paralel itu tes kepribadian.","Mesinnya bagus, supirnya yang bermasalah.")
 POOL(ID_police, "Polisi? Jangan mulai deh.","Mending nunduk aja kalau ada polisi.","Gua belum pernah ditangkap. Sebagian besar.","Sirene bikin gua deg-degan.","Jaga diri, bro, polisi di mana-mana.","Gua warga biasa. Biasa banget.","Hukum itu bagus. Dari jauh.","Gua takut sama kertas kerjanya, bukan polisinya.")
@@ -111,16 +111,16 @@ POOL(ID_time, "Gua nggak punya jam, tanya matahari.","Kayaknya udah waktunya mak
 POOL(ID_help, "Ada apa? Cepetan.","Bantu? Gua nggak jago, tapi gua coba.","Telepon 911, bro. Gua bukan dokter.","Tenang dulu, ceritain semuanya.","Gua bisa ngasih dukungan moral. Plus setengah sandwich.","Oke oke, gua di sini. Ada apa?")
 POOL(ID_sleep, "Tidur? Apaan tuh? Gua lupa.","Gua ngantuk banget, bisa tidur sambil berdiri.","Kasur itu penemuan terbaik.","Insomnia itu nyebelin banget.","Gua mimpiin tacos tiap malam.","Tidur siang itu waktu favorit gua.")
 POOL(ID_games, "Game? Gua suka banget.","Gua stuck di level tiga. Setahun.","Gua gamer santai. Santai, tapi emosian.","Konsol mahal, stik melayang.","Lu main apa? Gua penasaran.","Main game bikin waktu hilang. Waktu gua doang.")
-POOL(ID_question, "Pertanyaan bagus. Gua belum pernah mikirin itu.","Susah dijawab, bro. Menurut lu sendiri gimana?","Entahlah. Mungkin iya, mungkin enggak.","Kenapa nanya gua? Gua keliatan pinter?","Itu di atas gaji gua.","Pertanyaan sejuta dolar, itu.","Nanti gua pikirin, terus nggak gua kasih tau.","Kayaknya iya. Mungkin enggak. Tergantung.","Gua pass dulu.","Jawabannya empat puluh dua. Selalu.")
-POOL(ID_default_angry, "Udah, jangan ganggu gua lagi.","Gua lagi nggak mood. Pergi sana.","Hmph. Terserah lu.","Bodo amat.","Nggak minat.","Pergi aja deh.","Jangan bikin gua makin kesel.","Itu urusan lu, bukan gua.")
-POOL(ID_default_scared, "J-jangan deket-deket ya, bro...","Lu bikin gua nggak nyaman.","Gua mending pergi aja.","Gua nggak tau apa-apa, serius.","Perasaan gua nggak enak.","Jantung gua mau copot.","Jangan noleh ke belakang. Serius.","Gua mau pulang aja.")
-POOL(ID_default_happy, "Hahaha, bisa aja lu!","Santai, bro. Hidup itu indah!","Wih, seru juga ngobrol sama lu.","Gua suka ngobrol sama lu, sumpah.","Hari ini bagus banget!","Ayo ngerayain sesuatu! Apa aja!","Lu orangnya asik, tau nggak?","Gua pengen nyanyi nih!")
-POOL(ID_default, "Hmm, gitu ya.","Oke, oke. Terus?","Menarik juga omongan lu.","Gua dengerin kok. Lanjut.","Yaa gitu deh jalan hidup.","Iya, iya.","Bisa jadi.","Wah, gitu ceritanya.","Gua nggak tau soal itu.","Hmm, masuk akal. Kayaknya.","Terserah lu deh.","Oh begitu.","Hidup itu misteri. Sama kayak sandwich.","Lu ngomong apa sih? Tapi seru.")
-POOL(ID_random, "Gua curiga awan itu ngikutin gua.","Burung merpati itu drone pemerintah.","Kaos kaki kiri gua ilang lagi. Konspirasi.","Pernah nggak lu bengong ngeliatin tembok?","Gua penasaran bebek mikirin apa tentang kita.","Kenapa bangunan disebut bangunan padahal udah dibangun?","Gua ngomong sendiri. Normal nggak sih?","Trotoar ini hangat, kayak selimut raksasa yang ngebosenin.","Gua udah kasih nama semua merpati di jalan ini.","Kadang gua jalan mundur biar orang bingung.","Manusia itu aneh. Gua manusia.","Kunci gua ilang lagi, padahal di tangan.","Hari ini gua jadi figuran, bukan tokoh utama.","Gua makan sereal buat makan malam. Namanya perawatan diri.","Ada kucing di atap itu ngeliatin gua kayak nagih utang.","Gua nemu koin tadi. Sekarang gua kaya.","Gua pernah kejebak di pintu putar sejam.","Tikus itu bawa pizza. Respek.","Gua nggak punya masalah, gua punya hobi: bengong.","Kalau gua jadi sayuran, gua jadi kentang. Setia tapi biasa.")
-POOL(ID_absurd, "Pemanggang roti gua ngutang duit sama gua.","Gua 40 persen merpati dari pihak ibu.","Bip bop. Gua robot. Bercanda. Mungkin.","Gua pernah berantem sama mesin minuman dan kalah.","Bulan ngirim kartu pos buat gua.","Bayangan gua resign minggu lalu.","Gua alergi hari Senin, Selasa, dan kata benda.","Ada angsa yang ngikutin gua, namanya Steve.","Kucing tetangga skor kreditnya lebih bagus dari gua.","Kulkas gua ngedengungin lagu favorit gua.","Gua pernah diceramahin merpati. Dia benar.","Otak gua itu browser dengan 83 tab kebuka.","Jiwa gua pergi makan siang dan nggak balik.","Pisang. Itu aja. Itu pikiran gua.","Gua bisa makan satu burrito sekali telan.","Wubba lubba dub dub. Gua juga nggak ngerti.")
+POOL(ID_question, "Pertanyaan bagus. Gua belum pernah mikirin itu.","Susah dijawab, bro. Menurut lu sendiri gimana?","Entahlah. Mungkin iya, mungkin enggak.","Kenapa nanya gua? Gua keliatan pinter?","Itu di atas gaji gua.","Pertanyaan sejuta dolar, itu.","Nanti gua pikirin, terus nggak gua kasih tau.","Kayaknya iya. Mungkin enggak. Tergantung.","Gua pass dulu.","Jawabannya empat puluh dua. Selalu.","Hmm, gua belum pernah ditanya gitu.","Susah juga ya. Menurut lu gimana?","Gua nggak yakin, tapi kayaknya iya.","Pertanyaan lu dalem banget buat jam segini.","Wah, gua nggak tau jawabannya.","Entahlah, tanya lagi besok.","Kok lu nanya gua? Gua kan cuma lewat.","Jawabannya ada di dalam hati. Atau di internet.","Gua nggak ahli soal itu.","Itu pertanyaan jebakan, ya?")
+POOL(ID_default_angry, "Udah, jangan ganggu gua lagi.","Gua lagi nggak mood. Pergi sana.","Hmph. Terserah lu.","Bodo amat.","Nggak minat.","Pergi aja deh.","Jangan bikin gua makin kesel.","Itu urusan lu, bukan gua.","Gua nggak peduli.","Nggak penting buat gua.","Udah ya, gua nggak mau denger.","Berisik.","Capek gua ngomong sama lu.","Lu ganggu banget.")
+POOL(ID_default_scared, "J-jangan deket-deket ya, bro...","Lu bikin gua nggak nyaman.","Gua mending pergi aja.","Gua nggak tau apa-apa, serius.","Perasaan gua nggak enak.","Jantung gua mau copot.","Jangan noleh ke belakang. Serius.","Gua mau pulang aja.","G-gua nggak tau apa-apa.","Tolong jangan macem-macem.","Ada yang aneh di sini.","Gua takut, bro.","Jangan liatin gua gitu.")
+POOL(ID_default_happy, "Hahaha, bisa aja lu!","Santai, bro. Hidup itu indah!","Wih, seru juga ngobrol sama lu.","Gua suka ngobrol sama lu, sumpah.","Hari ini bagus banget!","Ayo ngerayain sesuatu! Apa aja!","Lu orangnya asik, tau nggak?","Gua pengen nyanyi nih!","Hahaha, seru banget!","Wih, mantap!","Lu lucu banget, tau nggak?","Gua suka ngobrol sama lu!","Aduh, gua ketawa terus.","Lu bikin hari gua indah!")
+POOL(ID_default, "Hmm, gitu ya.","Oke, oke. Terus?","Menarik juga omongan lu.","Gua dengerin kok. Lanjut.","Yaa gitu deh jalan hidup.","Iya, iya.","Bisa jadi.","Wah, gitu ceritanya.","Gua nggak tau soal itu.","Hmm, masuk akal. Kayaknya.","Terserah lu deh.","Oh begitu.","Hidup itu misteri. Sama kayak sandwich.","Lu ngomong apa sih? Tapi seru.","Oh gitu.","Ya ampun.","Terus gimana?","Gua nggak ngerti, tapi seru.","Wah, menarik.","Beneran?","Gitu ya ceritanya.","Hmm, lanjut, gua dengerin.","Aneh juga ya.","Wah, kok bisa?","Haha, oke deh.","Serius lu?","Duh, gua jadi mikir.","Nggak nyangka gua.")
+POOL(ID_random, "Gua curiga awan itu ngikutin gua.","Burung merpati itu drone pemerintah.","Kaos kaki kiri gua ilang lagi. Konspirasi.","Pernah nggak lu bengong ngeliatin tembok?","Gua penasaran bebek mikirin apa tentang kita.","Kenapa bangunan disebut bangunan padahal udah dibangun?","Gua ngomong sendiri. Normal nggak sih?","Trotoar ini hangat, kayak selimut raksasa yang ngebosenin.","Gua udah kasih nama semua merpati di jalan ini.","Kadang gua jalan mundur biar orang bingung.","Manusia itu aneh. Gua manusia.","Kunci gua ilang lagi, padahal di tangan.","Hari ini gua jadi figuran, bukan tokoh utama.","Gua makan sereal buat makan malam. Namanya perawatan diri.","Ada kucing di atap itu ngeliatin gua kayak nagih utang.","Gua nemu koin tadi. Sekarang gua kaya.","Gua pernah kejebak di pintu putar sejam.","Tikus itu bawa pizza. Respek.","Gua nggak punya masalah, gua punya hobi: bengong.","Kalau gua jadi sayuran, gua jadi kentang. Setia tapi biasa.","Kenapa ya hari Senin selalu datang cepet?","Gua penasaran, semut punya hari libur nggak ya?","Kadang gua mikir, awan itu lagi ngapain.","Pernah nggak lu merasa ditatap sama patung?","Kucing itu pasti punya rahasia besar.","Gua rasa lampu merah itu suka ngerjain gua.","Gua pengen punya hammock, di mana aja.","Hidup tuh kayak sinyal, kadang penuh kadang nol.","Tukang bakso tadi senyum ke gua. Mencurigakan.","Gua baru sadar, kaos kaki itu selalu berpasangan, kecuali yang ilang.","Kenapa roti bentuknya kotak, tapi ngenyangin bulat?","Besok gua mulai diet. Besoknya lagi juga.")
+POOL(ID_absurd, "Pemanggang roti gua ngutang duit sama gua.","Gua 40 persen merpati dari pihak ibu.","Bip bop. Gua robot. Bercanda. Mungkin.","Gua pernah berantem sama mesin minuman dan kalah.","Bulan ngirim kartu pos buat gua.","Bayangan gua resign minggu lalu.","Gua alergi hari Senin, Selasa, dan kata benda.","Ada angsa yang ngikutin gua, namanya Steve.","Kucing tetangga skor kreditnya lebih bagus dari gua.","Kulkas gua ngedengungin lagu favorit gua.","Gua pernah diceramahin merpati. Dia benar.","Otak gua itu browser dengan 83 tab kebuka.","Jiwa gua pergi makan siang dan nggak balik.","Pisang. Itu aja. Itu pikiran gua.","Gua bisa makan satu burrito sekali telan.","Wubba lubba dub dub. Gua juga nggak ngerti.","Gua pernah diajak debat sama kulkas. Gua kalah.","Sendok gua punya dendam sama gua.","Tadi malam gua mimpi jadi kentang goreng.","Ayam tetangga bisa nyanyi dangdut.","Bantal gua suka berbisik pas tengah malam.","Gua punya musuh bebuyutan: pintu putar.","Mobil gua bunyi 'tuing' tiap ketemu polisi.","Gua yakin tikus itu punya ijazah.","Tadi gua ngomong sama pohon, dia jawab.","Gua alergi sama kata 'besok'.")
 POOL(ID_mumble, "La la la la...","Hmm hmm hmm.","*bersenandung pelan*","Mm. Mmm. Mmmm.","Tralala...","*menghela napas*","Oalah.","Hadeh.","Aduh, di mana ya tadi...","*bersiul fals*")
-POOL(ID_sp_greet, "Woi, lu!","Halo!","Eh, hai!","Yo!","Hei, cuacanya bagus ya?","Apa kabar?","Halo, orang asing.","Hai, sob!","Maaf, ada waktu sebentar?","Hei hei, di sini!","Gua {n}, halo!")
-POOL(ID_sp_insult, "Bajunya bagus. Kalah taruhan ya?","Minggir, pecundang!","Liat apa lu, hah?","Jalan lu kayak bebek bingung.","Cepetan dong, lambat banget!","Hei, awas, genius!","Mukanya sengaja ya begitu?","Wah, rambut lu. Sengaja?","Lu nggak ada tempat lain?","Dasar kampungan.")
+POOL(ID_sp_greet, "Woi, lu!","Halo!","Eh, hai!","Yo!","Hei, cuacanya bagus ya?","Apa kabar?","Halo, orang asing.","Hai, sob!","Maaf, ada waktu sebentar?","Hei hei, di sini!","Gua {n}, halo!","Eh, permisi, bentar!","Hei, lu yang di sana!","Halo, boleh ganggu sebentar?","Yo, bro, apa kabar?","Woi, sini sini!","Pagi, bro!","Eh, kenalan dong.")
+POOL(ID_sp_insult, "Bajunya bagus. Kalah taruhan ya?","Minggir, pecundang!","Liat apa lu, hah?","Jalan lu kayak bebek bingung.","Cepetan dong, lambat banget!","Hei, awas, genius!","Mukanya sengaja ya begitu?","Wah, rambut lu. Sengaja?","Lu nggak ada tempat lain?","Dasar kampungan.","Minggir, jalanan bukan punya lu!","Baju lu kayak dapet dari tong sampah.","Ngapain lu berdiri di situ, patung?","Jalan yang bener dong!","Lu bau bawang, tau nggak?","Dasar lamban!","Awas, jangan halangin gua!","Norak banget sih lu.")
 
 // ===================== SPANYOL (inti) =====================
 POOL(ES_greet, "¡Hola, amigo!","¿Qué onda, hermano?","Buenas, ¿todo bien?","¡Ey! ¿Qué tal?","¡Hola! ¿Te perdiste?","Buenos días, compa.","¿Qué hubo?","¡Saludos, ciudadano!","Hola, hola, ¿cómo andas?","¡Oye! ¿Eres nuevo por aquí?")
@@ -155,6 +155,59 @@ POOL(ES_mumble, "La la la la...","Mmm mmm mmm.","*tarareando*","*suspira*","Ay, 
 POOL(ES_sp_greet, "¡Oye, tú!","¡Hola!","¡Ey, amigo!","¿Qué onda?","¡Buenas!")
 POOL(ES_sp_insult, "¡Qué ropa! ¿Perdiste una apuesta?","¡Quítate, perdedor!","¿Qué miras, eh?","Caminas como un pato confundido.","¡Fíjate por dónde andas, genio!")
 
+// ===================== POOL BARU: perasaan, pendapat, jenis pertanyaan, gema =====================
+POOL(EN_feel_sad, "Aw, man. That sucks. Wanna talk about it?","Hey, it'll get better. It always does. Eventually.","I'm sorry to hear that. Wanna sit down for a minute?","Rough, huh? I've been there.","Chin up, buddy. The sun's still out.","Sadness is just rain for the soul. Or something like that.","Hey, I'm here. Okay, not here here. But I'm listening.","That's tough. Take your time.")
+POOL(EN_feel_tired, "Same, man. I could sleep standing up.","You should get some rest. Seriously.","Coffee. Lots of it. Trust me.","Tired is my default setting.","Take a nap. The world can wait.","Ugh, I feel that in my bones.","Go home and sleep, buddy.","I'm tired just hearing it.")
+POOL(EN_feel_happy, "Hey, that's awesome! Good for you!","Love that energy! Keep it going!","Happiness looks good on you.","Now that's what I like to hear!","Nice! Let's celebrate. With snacks.","You're glowing, man. Seriously.","Good vibes only!","I'm happy for you. Genuinely.")
+POOL(EN_feel_angry, "Whoa, easy there. Take a breath.","Who made you mad? I'll glare at them.","Anger's a heavy bag. Put it down.","Count to ten. Then ten more.","Walk it off, buddy. Walk it way off.","I get it. People can be the worst.","Maybe punch a pillow instead of a person?","Yeah, I'd be mad too.")
+POOL(EN_feel_scared, "Hey, it's okay. I'm right here.","Deep breaths. In and out.","What are you scared of? Spiders? Taxes?","You're safe for now. Probably.","Stay close to me. I'm a terrible bodyguard, but still.","Don't worry, I've got your back. Mostly the back part.","Take it slow. One step at a time.","Fear's just excitement that forgot to be fun.")
+POOL(EN_feel_bored, "Bored? Same. Wanna stare at a pigeon with me?","Let's do something dumb. That fixes it.","Boredom's the mother of bad ideas. Let's have one.","Go find some trouble. A little. Not too much.","I could tell you a story. A boring one.","Count the clouds. It's a game. Kind of.","Try karaoke. Or don't.","Wanna race to that mailbox?")
+POOL(EN_feel_sick, "Ugh, feel better soon. Drink water.","Go see a doctor, man. Seriously.","Soup. Soup fixes everything.","That sounds rough. Get some rest.","Stay warm and hydrate, buddy.","Don't cough on me. Kidding. Maybe.","Hope you're back on your feet soon.","Rest up. Don't be a hero.")
+POOL(ID_feel_sad, "Aduh, sabar ya, bro. Mau cerita?","Gua turut sedih. Semua pasti lewat.","Yaelah, sini duduk dulu sebentar.","Berat ya? Gua ngerti kok.","Jangan sedih terus, nanti matahari muncul.","Hidup emang kadang jahat. Tapi lu kuat.","Gua dengerin kok, cerita aja.","Peluk dulu? Bercanda. Kecuali lu mau.")
+POOL(ID_feel_tired, "Sama, gua juga capek banget.","Istirahat dulu, bro, serius.","Ngopi dulu, atau tidur sekalian.","Capek itu pengaturan bawaan gua.","Tidur siang aja. Dunia bisa nunggu.","Gua ikut capek dengernya.","Pulang terus tidur, bro.","Pegel-pegel? Pijetin dong. Bercanda.")
+POOL(ID_feel_happy, "Wah, seneng banget gua dengernya!","Mantap, pertahankan, bro!","Hari lu pasti indah, ya!","Nah gitu dong, itu yang gua suka!","Ayo ngerayain pakai camilan!","Lu bersinar banget hari ini.","Kabar baik emang obat terbaik.","Gua ikut bahagia, sumpah.")
+POOL(ID_feel_angry, "Wah, tarik napas dulu, bro.","Siapa yang bikin lu marah? Gua pelototin dia.","Tenang, tenang, hitung sampai sepuluh.","Jalan-jalan dulu, biar adem.","Tonjok bantal aja, jangan orang.","Gua ngerti, orang kadang nyebelin.","Emosi itu berat, taro dulu.","Gua juga bakal kesel kalau jadi lu.")
+POOL(ID_feel_scared, "Tenang, gua di sini.","Tarik napas, buang pelan-pelan.","Takut apa? Hantu? Tagihan?","Lu aman kok. Kayaknya.","Deket gua aja. Gua bodyguard jelek, tapi lumayan.","Santai, satu langkah satu langkah.","Gua jagain, bro. Bagian belakangnya aja.","Takut itu wajar, kok.")
+POOL(ID_feel_bored, "Bosen? Sama! Mau ngelamun bareng?","Ayo bikin hal bodoh, itu manjur.","Cari masalah dikit. Jangan banyak-banyak.","Hitung awan, itu permainan. Kayaknya.","Karaokean yuk, atau jangan.","Mau balapan sampai kotak pos itu?","Gua bisa cerita, tapi ceritanya garing.","Bosen itu ibu dari ide jelek. Ayo bikin satu.")
+POOL(ID_feel_sick, "Aduh, cepet sembuh ya. Minum air putih.","Ke dokter, bro, serius.","Makan sup, sup nyembuhin segalanya.","Istirahat yang banyak, jangan sok kuat.","Jangan batuk ke gua. Bercanda. Mungkin.","Semoga cepet pulih ya.","Yang hangat-hangat aja dulu, bro.","Tidur, minum obat, jangan main hape.")
+POOL(ES_feel_sad, "Ánimo, amigo. ¿Quieres hablar?","Ya pasará, hermano.","Lo siento mucho, de verdad.")
+POOL(ES_feel_tired, "Igual yo, hermano.","Descansa un poco.","Un café y a seguir.")
+POOL(ES_feel_happy, "¡Qué bueno, amigo!","¡Me alegro por ti!","¡Así me gusta!")
+POOL(ES_feel_angry, "Cálmate, hermano.","Respira hondo.","Te entiendo, la gente a veces es lo peor.")
+POOL(ES_feel_scared, "Tranquilo, estoy aquí.","Respira, amigo.","Estás a salvo. Creo.")
+POOL(ES_feel_bored, "¿Aburrido? Yo también.","Hagamos algo tonto.","Cuenta las nubes.")
+POOL(ES_feel_sick, "Que te mejores pronto.","Ve al doctor, amigo.","Sopa, la sopa lo arregla todo.")
+POOL(EN_like, "Do I like {w}? Yeah, kind of.","{w}? Honestly, can't stand it.","I love {w}. Don't tell anyone.","{w} is okay. Not my favorite, not my worst.","Ask me about {w} on a better day.","I'm not a big {w} guy, to be honest.","{w}? It's alright. Sometimes it's great.","Love it, hate it, depends on the day. That's {w}.","Yes. No. Maybe. It's {w}, what do you want from me?","{w} changed my life. Not really. But it was fine.","I'm a huge fan of {w}. Okay, a medium fan.","I've had mixed feelings about {w} since forever.","Why do you ask about {w}? Are you selling it?","{w}? Man, don't get me started.")
+POOL(ID_like, "Suka {w}? Lumayan sih.","{w}? Jujur gua nggak tahan.","Gua cinta banget {w}. Jangan bilang siapa-siapa.","{w} biasa aja. Bukan favorit, bukan terburuk.","Nanya soal {w} nanti aja pas gua lagi mood.","Gua bukan penggemar {w}, jujur.","{w}? Kadang bagus, kadang nggak.","Suka nggak suka tergantung hari. Itu {w}.","Iya. Enggak. Mungkin. Itu kan {w}, lu maunya apa?","{w} pernah ngubah hidup gua. Bohong. Tapi lumayan.","Gua penggemar berat {w}. Oke, setengah berat.","Gua selalu campur aduk soal {w}.","Kenapa nanya {w}? Lu jualan?","{w}? Wah, jangan mulai deh.")
+POOL(ES_like, "¿{w}? Más o menos.","Me encanta {w}, no se lo digas a nadie.","No soy fan de {w}, la verdad.","{w} está bien, ni bueno ni malo.","¿{w}? No me empieces.")
+POOL(EN_why, "Because that's just how it is.","Why not?","Nobody knows. Not even the pigeons.","Because life's weird like that.","Good question. Ask the universe.","Because someone said so. Probably my mom.","It's complicated. Mostly dumb, but complicated.","Because gravity. Or taxes. One of those.","Why do you think? Be honest.","Because reasons.")
+POOL(EN_how, "Carefully. Very carefully.","With a lot of luck and a little duct tape.","Slowly, then all at once.","Same way everyone does it. Badly.","I'd say just wing it. That's my method.","Step one: panic. Step two: figure it out.","Honestly? No idea. But I'm confident.","By trial and a whole lot of error.","Ask someone smarter. I'll wait.","You just do it. Then complain.")
+POOL(EN_when, "Whenever you're ready.","Soon. Or later. Probably later.","Right now. Or in an hour. Time is weird.","When the pigeons say so.","Not today, that's for sure.","When I feel like it. So never.","Yesterday. Wait, no, tomorrow.","Around noon-ish. Or midnight-ish.")
+POOL(EN_who, "Nobody important.","Some guy. I forget his name.","My cousin's neighbor's dog, probably.","Who knows? Who cares?","That'd be me. Or someone like me.","A legend. Or a rumor. Can't tell.","I'd tell you, but I forgot.","The guy with the hat. You know the one.")
+POOL(EN_what, "Good question. What do you think it is?","Something weird. Possibly a sandwich.","That's the million-dollar question.","Honestly? Beats me.","It's a long story. And a boring one.","Depends who you ask.","A thing. A really important thing.","I'm still figuring that out myself.")
+POOL(EN_can, "I could. Will I? That's another question.","Sure. Eventually.","Probably. Don't quote me.","Nope. Not today.","I can do anything. Except fly. And math.","Maybe. What's in it for me?","Depends. Is it dangerous?","I'd love to, but my schedule is full of nothing.")
+POOL(EN_do, "Yeah, pretty much.","Nope, not really.","Sometimes. Depends on the day.","Honestly? Yes. And no.","I do. Does that make me weird?","Why do you wanna know?","I used to. Not anymore.","Absolutely. Don't ask me why.")
+POOL(ID_why, "Soalnya emang begitu.","Kenapa enggak?","Nggak ada yang tau, merpati juga enggak.","Karena hidup emang aneh.","Pertanyaan bagus. Tanya semesta.","Soalnya ada yang bilang gitu. Mungkin ibu gua.","Ribet. Sebenernya sepele, tapi ribet.","Gara-gara gravitasi. Atau pajak.","Menurut lu kenapa? Jujur aja.","Karena alasan.")
+POOL(ID_how, "Hati-hati. Hati-hati banget.","Pakai keberuntungan sama selotip.","Pelan-pelan, lalu tiba-tiba.","Cara semua orang. Dengan jelek.","Asal coba aja, itu metode gua.","Langkah satu: panik. Langkah dua: cari cara.","Jujur? Nggak tau. Tapi gua yakin.","Coba-coba sampai gagal sampai bisa.","Tanya yang lebih pinter, gua tunggu.","Ya dijalanin, terus ngeluh.")
+POOL(ID_when, "Kapan pun lu siap.","Sebentar lagi. Atau nanti. Kayaknya nanti.","Sekarang. Atau sejam lagi. Waktu itu aneh.","Pas merpati bilang waktunya.","Bukan hari ini, pasti.","Pas gua lagi mood. Jadi nggak pernah.","Kemarin. Eh, besok.","Sekitar tengah hari. Atau tengah malam.")
+POOL(ID_who, "Bukan siapa-siapa penting.","Seorang cowok, gua lupa namanya.","Anjing tetangga sepupu gua, mungkin.","Siapa tau? Siapa peduli?","Gua. Atau yang kayak gua.","Legenda. Atau gosip. Nggak jelas.","Gua kasih tau, tapi gua lupa.","Yang pakai topi itu, tau kan.")
+POOL(ID_what, "Pertanyaan bagus. Menurut lu apa?","Sesuatu yang aneh. Mungkin sandwich.","Itu pertanyaan sejuta dolar.","Jujur? Entahlah.","Panjang ceritanya, dan membosankan.","Tergantung lu nanya siapa.","Sebuah benda. Benda yang penting banget.","Gua masih cari tau juga.")
+POOL(ID_can, "Bisa. Mau? Itu pertanyaan lain.","Bisa. Nanti.","Mungkin. Jangan kutip gua.","Nggak. Bukan hari ini.","Gua bisa segalanya, kecuali terbang dan matematika.","Bisa. Apa untungnya buat gua?","Tergantung. Bahaya nggak?","Mau banget, tapi jadwal gua penuh kekosongan.")
+POOL(ID_do, "Iya, kurang lebih.","Enggak sih, nggak juga.","Kadang. Tergantung harinya.","Jujur? Iya. Dan enggak.","Iya. Aneh ya?","Kenapa lu pengen tau?","Dulu iya. Sekarang enggak.","Banget. Jangan tanya kenapa.")
+POOL(ES_why, "Porque así es.","¿Por qué no?","Nadie lo sabe.","Porque la vida es rara.")
+POOL(ES_how, "Con cuidado, mucho cuidado.","Con suerte y cinta adhesiva.","Poco a poco.")
+POOL(ES_when, "Cuando estés listo.","Pronto. O tarde.","Ahora, o en una hora.")
+POOL(ES_who, "Nadie importante.","Un tipo. Olvidé su nombre.","Quién sabe.")
+POOL(ES_what, "Buena pregunta. ¿Tú qué crees?","Ni idea, hermano.","Algo raro. Quizás un sándwich.")
+POOL(ES_can, "Podría. ¿Lo haré? Otra pregunta.","Quizás.","Hoy no, amigo.")
+POOL(ES_do, "Sí, más o menos.","No, la verdad que no.","A veces.")
+POOL(EN_echo, "{w}? Hmm, not sure what to say about {w}.","You really wanna talk about {w}? Okay, go on.","Interesting. What's the deal with {w}?","I don't know much about {w}, to be honest.","{w}... that reminds me of something. Never mind.","Why bring up {w}?","Nobody around here ever mentions {w}. Until you.","Funny, I was just thinking about {w}. Okay, no I wasn't.","What about {w}?","{w} is a big topic. I'm a small guy.","Huh. {w}. Never thought about it.","So... {w}. Okay. Tell me more.","I have mixed feelings about {w}. Mostly confusion.","Let me guess: you're a {w} person.")
+POOL(ID_echo, "{w}? Hmm, gua nggak yakin mau bilang apa soal {w}.","Lu beneran mau ngomongin {w}? Oke, lanjut.","Menarik. Ada apa sama {w}?","Gua nggak banyak tau soal {w}, jujur.","Kenapa tiba-tiba bahas {w}?","{w} ya... jadi inget sesuatu. Nggak jadi.","Soal {w}, gua netral aja.","Wah, {w}. Topik berat nih.","Baru kali ini ada yang bahas {w} sama gua.","{w}... gua belum pernah mikirin itu.","Terus, {w} kenapa?","Hmm, {w}. Oke, gua dengerin.","Gua punya perasaan campur aduk soal {w}.","Gua tebak: lu orang {w}.")
+POOL(ES_echo, "¿{w}? Mmm, no sé qué decir sobre {w}.","¿De verdad quieres hablar de {w}? Adelante.","Interesante. ¿Qué pasa con {w}?","No sé mucho de {w}, la verdad.","¿Por qué sacas el tema de {w}?")
+POOL(STOP_EN, "the","and","you","your","are","was","were","this","that","with","have","has","had","for","not","but","can","could","would","will","just","very","really","about","what","why","how","when","where","who","which","like","love","hate","think","know","want","need","tell","say","said","get","got","going","there","here","than","then","also","please","hey","hello","dude","bro","man","some","any","all","its","dont","does","did","from","they","them","our","out","off","too","yes","yeah","okay","gonna","wanna","lets","think","thoughts","opinion","feel","feeling","about","menurut","soal","tentang","pendapat","gimana")
+POOL(STOP_ID, "yang","dan","atau","ini","itu","apa","siapa","kenapa","gimana","bagaimana","kapan","dimana","untuk","sama","juga","lagi","udah","sudah","belum","mau","bisa","boleh","jangan","tolong","aku","gua","gue","saya","kamu","kau","dia","kita","kami","mereka","nih","dong","sih","deh","kok","aja","banget","nggak","enggak","tidak","bukan","ada","punya","suka","benci","kalau","kalo","karena","tapi","tetapi","iya","oke","halo","hai","bro","bang","emang","pernah","lebih","dari","dengan","pada","akan","ke","di","buat")
+POOL(STOP_ES, "que","qué","como","cómo","para","pero","porque","donde","dónde","cuando","quien","quién","tengo","quiero","estoy","eres","tienes","puedes","mucho","muy","también","amigo","hola","gracias","por","con","los","las","una","uno","del","esto","eso","aqui","aquí")
+
 } // namespace VocabData
 
 // ======================================================================
@@ -176,7 +229,7 @@ static const Pool NOPOOL = {nullptr, 0};
 
 enum Cat { C_GREET, C_HOWARE, C_NAME, C_THANKS, C_BYE, C_SORRY, C_YES, C_NO, C_MONEY, C_DIRECTIONS, C_LOVE, C_COMPLIMENT,
            C_INSULT, C_THREAT, C_JOKE, C_WEATHER, C_FOOD, C_MUSIC, C_CARS, C_POLICE, C_GANG, C_WORK, C_FAMILY, C_AGE, C_FROM,
-           C_TIME, C_HELP, C_SLEEP, C_GAMES, C_QUESTION, C_DEFAULT, C_COUNT };
+           C_TIME, C_HELP, C_SLEEP, C_GAMES, C_LIKE, C_STORY, C_WHY, C_HOW, C_WHEN, C_WHO, C_WHAT, C_CAN, C_DO, C_QUESTION, C_DEFAULT, C_COUNT };
 
 // v (mood): 0 netral, 1 marah, 2 takut, 3 senang.  Untuk INSULT/THREAT: 0 penakut, 1 galak, 2 netral.
 inline Pool PoolEN(int c, int v) {
@@ -194,6 +247,9 @@ inline Pool PoolEN(int c, int v) {
         case C_GANG: return PL(EN_gang);       case C_WORK: return PL(EN_work);       case C_FAMILY: return PL(EN_family);
         case C_AGE: return PL(EN_age);         case C_FROM: return PL(EN_from);       case C_TIME: return PL(EN_time);
         case C_HELP: return PL(EN_help);       case C_SLEEP: return PL(EN_sleep);     case C_GAMES: return PL(EN_games);
+        case C_LIKE: return PL(EN_like);   case C_WHY: return PL(EN_why);   case C_HOW: return PL(EN_how);
+        case C_WHEN: return PL(EN_when);   case C_WHO: return PL(EN_who);   case C_WHAT: return PL(EN_what);
+        case C_CAN: return PL(EN_can);     case C_DO: return PL(EN_do);     case C_STORY: return NOPOOL;
         case C_QUESTION: return PL(EN_question);
         default: return v == 1 ? PL(EN_default_angry) : v == 2 ? PL(EN_default_scared) : v == 3 ? PL(EN_default_happy) : PL(EN_default);
     }
@@ -211,6 +267,9 @@ inline Pool PoolID(int c, int v) {
         case C_GANG: return PL(ID_gang);       case C_WORK: return PL(ID_work);       case C_FAMILY: return PL(ID_family);
         case C_AGE: return PL(ID_age);         case C_FROM: return PL(ID_from);       case C_TIME: return PL(ID_time);
         case C_HELP: return PL(ID_help);       case C_SLEEP: return PL(ID_sleep);     case C_GAMES: return PL(ID_games);
+        case C_LIKE: return PL(ID_like);   case C_WHY: return PL(ID_why);   case C_HOW: return PL(ID_how);
+        case C_WHEN: return PL(ID_when);   case C_WHO: return PL(ID_who);   case C_WHAT: return PL(ID_what);
+        case C_CAN: return PL(ID_can);     case C_DO: return PL(ID_do);     case C_STORY: return NOPOOL;
         case C_QUESTION: return PL(ID_question);
         default: return v == 1 ? PL(ID_default_angry) : v == 2 ? PL(ID_default_scared) : v == 3 ? PL(ID_default_happy) : PL(ID_default);
     }
@@ -224,6 +283,9 @@ inline Pool PoolES(int c, int v) {
         case C_MONEY: return PL(ES_money);     case C_DIRECTIONS: return PL(ES_directions); case C_LOVE: return PL(ES_love);
         case C_INSULT: return PL(ES_insult);   case C_THREAT: return PL(ES_threat);   case C_JOKE: return PL(ES_joke);
         case C_FOOD: return PL(ES_food);       case C_QUESTION: return PL(ES_question);
+        case C_LIKE: return PL(ES_like);   case C_WHY: return PL(ES_why);   case C_HOW: return PL(ES_how);
+        case C_WHEN: return PL(ES_when);   case C_WHO: return PL(ES_who);   case C_WHAT: return PL(ES_what);
+        case C_CAN: return PL(ES_can);     case C_DO: return PL(ES_do);     case C_STORY: return NOPOOL;
         case C_COMPLIMENT: case C_WEATHER: case C_MUSIC: case C_CARS: case C_POLICE: case C_GANG: case C_WORK: case C_FAMILY:
         case C_AGE: case C_FROM: case C_TIME: case C_HELP: case C_SLEEP: case C_GAMES: return NOPOOL;   // jatuh ke ES_default
         default: return v == 1 ? PL(ES_default_angry) : v == 2 ? PL(ES_default_scared) : v == 3 ? PL(ES_default_happy) : PL(ES_default);
@@ -231,9 +293,21 @@ inline Pool PoolES(int c, int v) {
 }
 inline Pool GetPool(int lang, int c, int v) {
     Pool p = lang == 1 ? PoolID(c, v) : lang == 2 ? PoolES(c, v) : PoolEN(c, v);
-    if (p.n == 0) p = lang == 1 ? PoolID(C_DEFAULT, v) : lang == 2 ? PoolES(C_DEFAULT, v) : PoolEN(c, v);
+    if (p.n == 0) p = lang == 1 ? PoolID(C_DEFAULT, v) : lang == 2 ? PoolES(C_DEFAULT, v) : PoolEN(C_DEFAULT, v);
     return p;
 }
+inline Pool FeelPool(int lang, int k) {                               // 0 sedih 1 capek 2 senang 3 marah 4 takut 5 bosen 6 sakit
+    switch (k) {
+        case 0: return lang == 1 ? PL(ID_feel_sad)   : lang == 2 ? PL(ES_feel_sad)   : PL(EN_feel_sad);
+        case 1: return lang == 1 ? PL(ID_feel_tired) : lang == 2 ? PL(ES_feel_tired) : PL(EN_feel_tired);
+        case 2: return lang == 1 ? PL(ID_feel_happy) : lang == 2 ? PL(ES_feel_happy) : PL(EN_feel_happy);
+        case 3: return lang == 1 ? PL(ID_feel_angry) : lang == 2 ? PL(ES_feel_angry) : PL(EN_feel_angry);
+        case 4: return lang == 1 ? PL(ID_feel_scared): lang == 2 ? PL(ES_feel_scared): PL(EN_feel_scared);
+        case 5: return lang == 1 ? PL(ID_feel_bored) : lang == 2 ? PL(ES_feel_bored) : PL(EN_feel_bored);
+        default: return lang == 1 ? PL(ID_feel_sick) : lang == 2 ? PL(ES_feel_sick)  : PL(EN_feel_sick);
+    }
+}
+inline Pool PoolEcho(int lang) { return lang == 1 ? PL(ID_echo) : lang == 2 ? PL(ES_echo) : PL(EN_echo); }
 inline Pool PoolRandom(int lang) { return lang == 1 ? PL(ID_random) : lang == 2 ? PL(ES_random) : PL(EN_random); }
 inline Pool PoolAbsurd(int lang) { return lang == 1 ? PL(ID_absurd) : lang == 2 ? PL(ES_absurd) : PL(EN_absurd); }
 inline Pool PoolMumble(int lang) { return lang == 1 ? PL(ID_mumble) : lang == 2 ? PL(ES_mumble) : PL(EN_mumble); }
@@ -241,10 +315,29 @@ inline Pool PoolSpGreet(int lang) { return lang == 1 ? PL(ID_sp_greet) : lang ==
 inline Pool PoolSpInsult(int lang) { return lang == 1 ? PL(ID_sp_insult) : lang == 2 ? PL(ES_sp_insult) : PL(EN_sp_insult); }
 
 // ---------- deteksi topik (kata kunci gabungan 3 bahasa; spasi = batas kata) ----------
-inline std::string LowerPad(const std::string& s) {
-    std::string t = " ";
-    for (char c : s) t += (char)tolower((unsigned char)c);
-    return t + " ";
+// Normalisasi: huruf kecil, apostrof dihapus, tanda baca jadi spasi, diapit spasi. ("Cars?" -> " cars ")
+inline std::string NormText(const std::string& s) {
+    std::string t = " "; bool lastSpace = true;
+    for (unsigned char c : s) {
+        if (c == '\'') continue;
+        char o = c >= 128 ? (char)c : (isalnum(c) ? (char)tolower(c) : ' ');
+        if (o == ' ') { if (!lastSpace) t += ' '; lastSpace = true; }
+        else { t += o; lastSpace = false; }
+    }
+    if (!lastSpace) t += ' ';
+    return t;
+}
+inline std::string LowerPad(const std::string& s) { return NormText(s); }
+inline std::string NormKw(const char* k) {                           // kata kunci dinormalkan; spasi awal/akhir yang disengaja dipertahankan
+    std::string in = k; bool lead = !in.empty() && in.front() == ' ', trail = in.size() > 1 && in.back() == ' ';
+    std::string n = NormText(in);
+    if (!lead && n.size() > 1) n.erase(0, 1);
+    if (!trail && n.size() > 1) n.pop_back();
+    return n;
+}
+inline bool HasAnyN(const std::string& t, std::initializer_list<const char*> ks) {
+    for (auto k : ks) if (t.find(NormKw(k)) != std::string::npos) return true;
+    return false;
 }
 #define KW(NAME, ...) static const char* const NAME[] = { __VA_ARGS__ };
 KW(K_THREAT, "kill you","shoot you","i'll kill","gonna kill","beat you","hurt you","you're dead","you are dead","bury you","stab you","bunuh","tembak","mati lu","hajar","habisi","pukul gua","te voy a matar","te mato")
@@ -252,7 +345,7 @@ KW(K_INSULT, "idiot","stupid"," dumb","asshole","bitch","fuck you","loser","ugly
 KW(K_SORRY, "sorry","apologize","my bad","forgive me","maaf"," sori ","perdón","perdon","lo siento")
 KW(K_THANKS, "thank","thx","appreciate","makasih","terima kasih","tengkyu","gracias")
 KW(K_BYE, "bye","goodbye","see you","see ya","gotta go","i'm leaving","take care"," later ","dadah","sampai jumpa","duluan","cabut","adiós","adios","hasta luego","nos vemos")
-KW(K_NAME, "your name","who are you","introduce yourself","nama lu","siapa lu","siapa kamu","siapa nama","tu nombre","cómo te llamas","como te llamas","quién eres","quien eres")
+KW(K_NAME, "your name","who are you","introduce yourself","nama lu","nama lo","nama kamu","namamu","nama anda","kamu siapa","lu siapa","lo siapa","elu siapa","siapa lu","siapa lo","siapa kamu","siapa nama","siapa anda","tu nombre","cómo te llamas","como te llamas","quién eres","quien eres")
 KW(K_HOWARE, "how are you","how's it going","hows it going","how you doing","how are things","how do you do","what's up","whats up","apa kabar","gimana kabar","kabar lu","lagi apa","cómo estás","como estas","qué tal","que tal")
 KW(K_GREET, "hello"," hi ","hey"," yo ","sup ","howdy","good morning","good evening","good afternoon","greetings","halo"," hai ","woi","woy","pagi","siang"," sore ","malam","assalamualaikum","salam","hola","buenos","buenas","oye","wassup"," test "," tes ")
 KW(K_JOKE, "joke","funny","make me laugh"," lol ","haha","lucu","bercanda","ketawa","chiste","broma","gracioso")
@@ -277,23 +370,76 @@ KW(K_GAMES, " game"," gta ","video game","console"," play ","main game","juego",
 KW(K_YES, " yes "," yeah "," yep "," sure ","of course","definitely"," iya "," betul ","benar"," sí "," claro ")
 KW(K_NO, " no "," nope "," nah "," never ","not really","tidak","nggak"," gak ","enggak"," jangan ")
 
-struct KwEntry { int cat; const char* const* d; size_t n; };
-#define KE(C, K) KwEntry{C, K, sizeof(K) / sizeof(K[0])}
+KW(K_LIKE, "do you like","do you love","do you hate","you like ","what do you think about","what do you think of","how do you feel about","are you a fan","kamu suka","lu suka","lo suka","kau suka","menurut lu","menurut kamu","menurut lo","pendapat lu","pendapat kamu","suka nggak","suka ga","te gusta","te gustan","qué piensas de","que piensas de")
+KW(K_STORY, "tell me a story","tell me about yourself","tell me something","tell me more","story","cerita","ceritain","ceritakan","dongeng","cuéntame","cuentame","historia")
+KW(K_QCAN, " can you "," could you "," would you "," will you ","bisakah","bisa ga","bisa nggak","bisa gak"," bisa ","puedes","podrías","podrias")
+KW(K_QDO, " do you "," are you "," did you "," have you "," is it ","apakah"," apa lu "," apa kamu "," emang "," tu eres ")
+KW(K_QWHY, " why ","kenapa","mengapa","por que","por qué")
+KW(K_QHOW, " how ","bagaimana","gimana","caranya"," cómo "," como ")
+KW(K_QWHEN, " when ","kapan","cuando","cuándo")
+KW(K_QWHO, " who ","siapa","quién","quien")
+KW(K_QWHAT, " what "," apa ","apaan"," qué "," que ")
+KW(K_FP, " i am "," im "," i feel "," ive been "," gua "," gue "," gw "," aku "," saya "," estoy "," me siento "," lagi ")
+KW(K_F_SAD, "sad","depress","cry","lonely","heartbroken","miserable","sedih","nangis","galau","patah hati","triste","llorar")
+KW(K_F_TIRED, "tired","exhausted","sleepy","worn out","capek","lelah","ngantuk"," cape ","cansad")
+KW(K_F_HAPPY, "happy","excited","great day"," glad ","senang","seneng","bahagia","gembira","feliz","contento")
+KW(K_F_ANGRY, "angry"," mad ","pissed","furious","annoyed","marah","kesel","kesal","emosi","enojad","molest")
+KW(K_F_SCARED, "scared","afraid","terrified","nervous","anxious","takut","ngeri","cemas","miedo","asustad")
+KW(K_F_BORED, "bored","boring","bosen","bosan","aburrid")
+KW(K_F_SICK, " sick "," ill ","headache","fever","sakit","pusing","demam","enferm")
+
+struct KwEntry { int cat; std::vector<std::string> k; };
+inline KwEntry MakeKE(int c, const char* const* d, size_t n) { KwEntry e; e.cat = c; for (size_t i = 0; i < n; i++) e.k.push_back(NormKw(d[i])); return e; }
+#define KE(C, K) MakeKE(C, K, sizeof(K) / sizeof(K[0]))
 inline const std::vector<KwEntry>& KwTable() {                      // urutan = prioritas
     static const std::vector<KwEntry> t = {
         KE(C_THREAT, K_THREAT), KE(C_INSULT, K_INSULT), KE(C_SORRY, K_SORRY), KE(C_THANKS, K_THANKS), KE(C_BYE, K_BYE),
-        KE(C_NAME, K_NAME), KE(C_HOWARE, K_HOWARE), KE(C_JOKE, K_JOKE), KE(C_LOVE, K_LOVE), KE(C_COMPLIMENT, K_COMPLIMENT),
+        KE(C_NAME, K_NAME), KE(C_HOWARE, K_HOWARE), KE(C_LIKE, K_LIKE), KE(C_JOKE, K_JOKE), KE(C_STORY, K_STORY), KE(C_LOVE, K_LOVE), KE(C_COMPLIMENT, K_COMPLIMENT),
         KE(C_MONEY, K_MONEY), KE(C_DIRECTIONS, K_DIRECTIONS), KE(C_POLICE, K_POLICE), KE(C_GANG, K_GANG), KE(C_FOOD, K_FOOD),
         KE(C_MUSIC, K_MUSIC), KE(C_CARS, K_CARS), KE(C_WEATHER, K_WEATHER), KE(C_WORK, K_WORK), KE(C_FAMILY, K_FAMILY),
         KE(C_AGE, K_AGE), KE(C_FROM, K_FROM), KE(C_TIME, K_TIME), KE(C_HELP, K_HELP), KE(C_SLEEP, K_SLEEP), KE(C_GAMES, K_GAMES),
         KE(C_YES, K_YES), KE(C_NO, K_NO), KE(C_GREET, K_GREET) };
     return t;
 }
+inline const std::vector<KwEntry>& KwQuestions() {                  // dipakai bila tidak ada topik lain
+    static const std::vector<KwEntry> t = { KE(C_CAN, K_QCAN), KE(C_DO, K_QDO), KE(C_WHY, K_QWHY), KE(C_HOW, K_QHOW), KE(C_WHEN, K_QWHEN), KE(C_WHO, K_QWHO), KE(C_WHAT, K_QWHAT) };
+    return t;
+}
+inline bool MatchAny(const std::string& t, const KwEntry& e) { for (auto& k : e.k) if (t.find(k) != std::string::npos) return true; return false; }
 inline std::vector<int> DetectAll(const std::string& padded) {
     std::vector<int> out;
-    for (auto& e : KwTable())
-        for (size_t i = 0; i < e.n; i++) if (padded.find(e.d[i]) != std::string::npos) { out.push_back(e.cat); break; }
+    for (auto& e : KwTable()) if (MatchAny(padded, e)) out.push_back(e.cat);
     return out;
+}
+inline int DetectQuestionType(const std::string& padded) {
+    for (auto& e : KwQuestions()) if (MatchAny(padded, e)) return e.cat;
+    return -1;
+}
+inline int DetectFeel(const std::string& padded) {                  // perlu penanda orang pertama ("gua lagi sedih", "i am tired")
+    static const KwEntry fp = MakeKE(0, K_FP, sizeof(K_FP) / sizeof(K_FP[0]));
+    if (!MatchAny(padded, fp)) return -1;
+    static const KwEntry f[7] = { MakeKE(0, K_F_SAD, sizeof(K_F_SAD) / sizeof(K_F_SAD[0])), MakeKE(1, K_F_TIRED, sizeof(K_F_TIRED) / sizeof(K_F_TIRED[0])),
+        MakeKE(2, K_F_HAPPY, sizeof(K_F_HAPPY) / sizeof(K_F_HAPPY[0])), MakeKE(3, K_F_ANGRY, sizeof(K_F_ANGRY) / sizeof(K_F_ANGRY[0])),
+        MakeKE(4, K_F_SCARED, sizeof(K_F_SCARED) / sizeof(K_F_SCARED[0])), MakeKE(5, K_F_BORED, sizeof(K_F_BORED) / sizeof(K_F_BORED[0])),
+        MakeKE(6, K_F_SICK, sizeof(K_F_SICK) / sizeof(K_F_SICK[0])) };
+    for (int i = 0; i < 7; i++) if (MatchAny(padded, f[i])) return i;
+    return -1;
+}
+// Kata kunci dari ucapan player (kata terpanjang yang bukan kata umum) untuk "menggemakan" topiknya
+inline std::string Keyword(const std::string& padded) {
+    std::vector<std::string> tok; std::string cur;
+    for (char ch : padded) { if (ch == ' ') { if (!cur.empty()) tok.push_back(cur); cur.clear(); } else cur += ch; }
+    std::string best;
+    for (auto& w : tok) {
+        if (w.size() < 3) continue;
+        bool stop = false;
+        for (size_t i = 0; i < sizeof(STOP_EN) / sizeof(STOP_EN[0]) && !stop; i++) if (w == STOP_EN[i]) stop = true;
+        for (size_t i = 0; i < sizeof(STOP_ID) / sizeof(STOP_ID[0]) && !stop; i++) if (w == STOP_ID[i]) stop = true;
+        for (size_t i = 0; i < sizeof(STOP_ES) / sizeof(STOP_ES[0]) && !stop; i++) if (w == STOP_ES[i]) stop = true;
+        if (stop) continue;
+        if (w.size() >= best.size()) best = w;
+    }
+    return best;
 }
 
 // ---------- generator kalimat acak (kombinasi ribuan) ----------
@@ -336,26 +482,42 @@ inline int ToneVariant(const Ctx& c) {                               // untuk hi
     if (c.trait == 4 || c.trait == 2 || c.anger > 60 || c.trait == 1) return 1;
     return 2;
 }
-inline std::string Fill(std::string s, const Ctx& c) {
+inline std::string Fill(std::string s, const Ctx& c, const std::string& w = "") {
     for (size_t p; (p = s.find("{n}")) != std::string::npos; ) s.replace(p, 3, c.name);
+    for (size_t p; (p = s.find("{w}")) != std::string::npos; ) {
+        std::string r = w.empty() ? std::string("that") : w;
+        if (p == 0 && !r.empty() && (unsigned char)r[0] < 128) r[0] = (char)toupper((unsigned char)r[0]);
+        s.replace(p, 3, r);
+    }
     return s;
 }
 inline bool WasRecent(const Ctx& c, const std::string& s) {
     for (auto& r : c.recent) if (r == s) return true;
     return false;
 }
-inline std::string PickFresh(const Pool& p, const Ctx& c, std::mt19937& g) {
+inline std::string PickFresh(const Pool& p, const Ctx& c, std::mt19937& g, const std::string& w = "") {
     std::string s;
-    for (int k = 0; k < 14; k++) { s = Fill(Pick(p, g), c); if (!WasRecent(c, s)) return s; }
+    for (int k = 0; k < 14; k++) { s = Fill(Pick(p, g), c, w); if (!WasRecent(c, s)) return s; }
     return s;
 }
 
+inline bool shortMsg0(const std::string& s) { return s.size() < 6; }
+
 inline std::string Reply(const Ctx& c, const std::string& said, int lang, std::mt19937& g, int& dH, int& dA, int& dF) {
     dH = dA = dF = 0;
-    std::string t = LowerPad(said);
+    std::string t = NormText(said);
+    std::string kw = Keyword(t);
     std::vector<int> cats = DetectAll(t);
     int first = -1, second = -1;
     for (int k : cats) { if (k == C_GREET && cats.size() > 1) continue; if (first < 0) first = k; else if (second < 0) second = k; }
+    // perasaan player ("gua lagi sedih") -> respon empati, kecuali sedang ngancam/ngehina
+    int feel = DetectFeel(t);
+    if (feel >= 0 && first != C_THREAT && first != C_INSULT) {
+        static const int dh[7] = {-2, -1, 6, -2, -2, 0, 0};
+        dH = dh[feel];
+        return PickFresh(FeelPool(lang, feel), c, g);
+    }
+    if (first < 0) first = DetectQuestionType(t);
     if (first < 0) first = said.find('?') != std::string::npos ? C_QUESTION : C_DEFAULT;
     int v = MoodVariant(c);
     switch (first) {
@@ -368,18 +530,26 @@ inline std::string Reply(const Ctx& c, const std::string& said, int lang, std::m
         case C_GREET: case C_NAME: case C_HOWARE: dH = 3; break;
         default: break;
     }
-    std::string out;
-    if (first == C_DEFAULT || first == C_QUESTION) {                 // bumbu acak biar jawaban nggak monoton
-        unsigned r = g() % 100;
-        if      (r < 14) out = PickFresh(PoolRandom(lang), c, g);
-        else if (r < 24) out = PickFresh(PoolAbsurd(lang), c, g);
-        else if (r < 34) out = Fill(Compose(lang, g), c);
-        else if (r < 40) out = PickFresh(PoolMumble(lang), c, g);
+    if (first == C_STORY) {                                          // "ceritain dong" -> cerita acak
+        std::string out = Fill(Compose(lang, g), c);
+        if (g() % 3 == 0) out = PickFresh(PoolRandom(lang), c, g) + " " + out;
+        return out;
     }
-    if (out.empty()) out = PickFresh(GetPool(lang, first, v), c, g);
-    if (second >= 0 && second != first && g() % 100 < 30) {          // kadang jawab dua topik sekaligus
+    if (shortMsg0(said)) kw.clear();
+    if (first == C_LIKE && kw.empty()) first = C_QUESTION;           // butuh kata yang ditanya
+    std::string out;
+    bool shortMsg = said.size() < 6;                                  // "ok", "hmm", "bro": jawab singkat saja
+    if (!shortMsg && (first == C_DEFAULT || first == C_QUESTION || first == C_WHAT || first == C_WHO)) {
+        unsigned r = g() % 100;
+        if (!kw.empty() && r < 55) out = PickFresh(PoolEcho(lang), c, g, kw);      // ulang topik dari player supaya nyambung
+        else if (r < 63) out = PickFresh(PoolRandom(lang), c, g);
+        else if (r < 68) out = PickFresh(PoolAbsurd(lang), c, g);
+        else if (r < 73) out = Fill(Compose(lang, g), c);
+    }
+    if (out.empty()) out = PickFresh(GetPool(lang, first, v), c, g, kw);
+    if (second >= 0 && second != first && second != C_LIKE && second != C_STORY && g() % 100 < 18) {   // kadang dua topik sekaligus
         int v2 = (second == C_THREAT || second == C_INSULT) ? ToneVariant(c) : MoodVariant(c);
-        out += " " + PickFresh(GetPool(lang, second, v2), c, g);
+        out += " " + PickFresh(GetPool(lang, second, v2), c, g, kw);
     }
     return out;
 }
