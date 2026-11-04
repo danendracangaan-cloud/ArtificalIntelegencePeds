@@ -36,6 +36,7 @@ static int   UseFontOrient = 1, FontOrient = 1;     // FontOrient: 0=tengah, 1=k
 static float HudYFrac = 0.28f;                           // 0.0 = atas layar, 1.0 = bawah (default di atas biar nggak ketutup keyboard)
 static int   UseMPKeyboard = 1, AutoOpenKeyboard = 0;      // AutoOpenKeyboard=0: keyboard dibuka manual lewat tombol chat
 static int   UseMPChatTrigger = 1, PassChatToMP = 0, DrawBeforeHud = 1;
+static int   FontSetup = 1;                                // 1 = set semua setelan font sendiri tiap kali menggambar (font tidak berubah-ubah)
 static int   UseDeathCheck = 1, HealthOffset = 0x540;      // chat otomatis hilang kalau ped mati (offset darah = dugaan dari struktur PC)   // pinjam keyboard dari libMP32.so
 static int   HudAuto = 1, UseFontWrap = 1;          // HudAuto: posisi teks otomatis dari ukuran layar
 static int   g_scrW = 0, g_scrH = 0;
@@ -61,9 +62,9 @@ static bool TryWrite(const std::string& path) {
     if (!f) return false;
     fprintf(f, "[Settings]\nProxyHost=%s\nProxyPort=%s\nTalkRange=%.1f\n"
                "DrawHud=%d\nUseFontStyle=%d\nUseFontScale=%d\nUseFontColor=%d\nUseFontRender=%d\n"
-               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nKeyboardAuto=%d\nHudYFrac=%.2f\nUseMPChatTrigger=%d\nPassChatToMP=%d\nDrawBeforeHud=%d\nUseDeathCheck=%d\nHealthOffset=%d\n",
+               "HudX=%.0f\nHudY=%.0f\nHudLine=%.0f\nHudScale=%.2f\nUseFontOrient=%d\nFontOrient=%d\nHudAuto=%d\nUseFontWrap=%d\nUseMPKeyboard=%d\nKeyboardAuto=%d\nHudYFrac=%.2f\nUseMPChatTrigger=%d\nPassChatToMP=%d\nDrawBeforeHud=%d\nUseDeathCheck=%d\nHealthOffset=%d\nFontSetup=%d\n",
             PROXY_HOST.c_str(), PROXY_PORT.c_str(), TALK_RANGE, DrawHudOn, UseFontStyle, UseFontScale, UseFontColor, UseFontRender,
-            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac, UseMPChatTrigger, PassChatToMP, DrawBeforeHud, UseDeathCheck, HealthOffset);
+            HudX, HudY, HudLine, HudScale, UseFontOrient, FontOrient, HudAuto, UseFontWrap, UseMPKeyboard, AutoOpenKeyboard, HudYFrac, UseMPChatTrigger, PassChatToMP, DrawBeforeHud, UseDeathCheck, HealthOffset, FontSetup);
     fclose(f);
     return true;
 }
@@ -74,7 +75,7 @@ static void LoadConfig() {
     std::string ini = VIS_DIR + "InteractivePeds.ini";
     FILE* f = fopen(ini.c_str(), "r");
     if (!f) { TryWrite(ini); return; }
-    char line[256]; bool hasNew = false, hasKb = false, hasY = false, hasTrig = false, hasDeath = false;
+    char line[256]; bool hasNew = false, hasKb = false, hasY = false, hasTrig = false, hasDeath = false, hasFont = false;
     while (fgets(line, sizeof line, f)) {
         char k[64], v[160];
         if (sscanf(line, " %63[^=]=%159[^\r\n]", k, v) == 2) {
@@ -94,6 +95,7 @@ static void LoadConfig() {
             else if (key == "DrawBeforeHud")    DrawBeforeHud = atoi(val.c_str());
             else if (key == "UseDeathCheck")    { UseDeathCheck = atoi(val.c_str()); hasDeath = true; }
             else if (key == "HealthOffset")     HealthOffset = atoi(val.c_str());
+            else if (key == "FontSetup")        { FontSetup = atoi(val.c_str()); hasFont = true; }
             else if (key == "HudYFrac")         { HudYFrac = (float)atof(val.c_str()); hasY = true; }
             else if (key == "HudY")          HudY = (float)atof(val.c_str());
             else if (key == "HudLine")       HudLine = (float)atof(val.c_str());
@@ -106,7 +108,7 @@ static void LoadConfig() {
         }
     }
     fclose(f);
-    if (!hasNew || !hasKb || !hasY || !hasTrig || !hasDeath) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
+    if (!hasNew || !hasKb || !hasY || !hasTrig || !hasDeath || !hasFont) TryWrite(ini);          // ini lama belum punya kunci baru -> tulis ulang lengkap
 }
 
 // ============================ Baca memori game dengan aman ============================
@@ -214,6 +216,60 @@ static void Act_HandsUp(void*)      { StubLog("angkat tangan"); }
 static void Act_Wave(void*)         { StubLog("melambai"); }
 
 // ============================ Teks di layar (font bawaan game) ============================
+
+// ============================ Setup font eksplisit ============================
+// Nama fungsi CFont dibaca dari tabel simbol libGTASA.so; jumlah/tipe argumen dibaca dari nama (mangled), jadi tidak menebak.
+static void (*F_Style)(int);      static void (*F_Scale1)(float);  static void (*F_Scale2)(float, float);
+static void (*F_Orient)(int);     static void (*F_Wrap)(float);     static void (*F_Prop)(int);
+static void (*F_Back2)(int, int); static void (*F_Justify)(int);   static void (*F_Shadow)(int);
+static bool g_fontReady = false;
+
+static bool IntLike(const std::string& a) { return a.size() == 1 && strchr("hstijcal", a[0]) != nullptr; }
+static void LoadCFont() {
+    std::string so; FILE* mp = fopen("/proc/self/maps", "r"); char l[600];
+    while (mp && fgets(l, sizeof l, mp)) if (strstr(l, "libGTASA.so")) { char* p = strchr(l, '/'); if (p) { so = p; while (!so.empty() && (so.back() == '\n' || so.back() == ' ')) so.pop_back(); break; } }
+    if (mp) fclose(mp);
+    size_t del = so.find(" (deleted)"); if (del != std::string::npos) so.erase(del);
+    FILE* f = so.empty() ? nullptr : fopen(so.c_str(), "rb");
+    Elf32_Ehdr eh;
+    if (!f || fread(&eh, sizeof eh, 1, f) != 1 || memcmp(eh.e_ident, ELFMAG, SELFMAG) != 0 || eh.e_shnum == 0 || eh.e_shnum > 200) { if (f) fclose(f); Mark("FONT: gagal baca tabel simbol libGTASA"); return; }
+    std::vector<Elf32_Shdr> sh(eh.e_shnum);
+    fseek(f, eh.e_shoff, SEEK_SET);
+    if (fread(sh.data(), sizeof(Elf32_Shdr), eh.e_shnum, f) != eh.e_shnum) { fclose(f); return; }
+    std::vector<std::string> names;
+    for (auto& s : sh) {
+        if (s.sh_type != SHT_DYNSYM || s.sh_link >= sh.size()) continue;
+        Elf32_Shdr& st = sh[s.sh_link];
+        std::vector<Elf32_Sym> syms(s.sh_size / sizeof(Elf32_Sym)); std::vector<char> str(st.sh_size + 1, 0);
+        fseek(f, s.sh_offset, SEEK_SET); if (fread(syms.data(), sizeof(Elf32_Sym), syms.size(), f) != syms.size()) break;
+        fseek(f, st.sh_offset, SEEK_SET); if (fread(str.data(), 1, st.sh_size, f) != st.sh_size) break;
+        for (auto& sy : syms) {
+            if (sy.st_shndx == SHN_UNDEF || sy.st_name >= st.sh_size) continue;
+            const char* n = &str[sy.st_name];
+            if (strncmp(n, "_ZN5CFont", 9) == 0) names.push_back(n);
+        }
+    }
+    fclose(f);
+    {   std::string out = VIS_DIR + "InteractivePeds_symbols_FONT.txt"; FILE* o = fopen(out.c_str(), "w");
+        if (o) { for (auto& n : names) fprintf(o, "%s\n", n.c_str()); fclose(o); } }
+    auto find = [&](const char* base, std::string& args) -> uintptr_t {
+        std::string pre = std::string("_ZN5CFont") + std::to_string(strlen(base)) + base + "E";
+        for (auto& n : names) if (n.compare(0, pre.size(), pre) == 0) { args = n.substr(pre.size()); uintptr_t a = aml->GetSym(hGTASA, n.c_str()); if (a) { Mark("FONT: " + std::string(base) + " -> " + n); return a; } }
+        Mark(std::string("FONT: ") + base + " TIDAK ADA"); return 0;
+    };
+    std::string a;
+    if (uintptr_t p = find("SetFontStyle", a);       p && (IntLike(a) || a == "14eFontStyle")) SET_TO(F_Style, p);
+    if (uintptr_t p = find("SetScale", a);           p) { if (a == "ff") SET_TO(F_Scale2, p); else if (a == "f") SET_TO(F_Scale1, p); }
+    if (uintptr_t p = find("SetOrientation", a);     p && (IntLike(a) || a == "14eFontAlignment")) SET_TO(F_Orient, p);
+    if (uintptr_t p = find("SetWrapx", a);           p && a == "f")  SET_TO(F_Wrap, p);
+    if (uintptr_t p = find("SetProportional", a);    p && a == "b")  SET_TO(F_Prop, p);
+    if (uintptr_t p = find("SetBackground", a);      p && a == "bb") SET_TO(F_Back2, p);
+    if (uintptr_t p = find("SetJustify", a);         p && a == "b")  SET_TO(F_Justify, p);
+    if (uintptr_t p = find("SetDropShadowPosition", a); p && IntLike(a)) SET_TO(F_Shadow, p);
+    g_fontReady = F_Style || F_Scale1 || F_Scale2 || F_Orient || F_Wrap;
+    Mark(std::string("FONT: setup eksplisit ") + (g_fontReady ? "SIAP" : "TIDAK SIAP (pakai cara lama)"));
+}
+
 static int g_crumbs = 0;
 static void Crumb(const char* what) {          // jejak sebelum tiap panggilan font; kalau game crash, baris terakhir = pelakunya
     if (g_crumbs >= 60) return;
@@ -225,15 +281,29 @@ static void Crumb(const char* what) {          // jejak sebelum tiap panggilan f
 static void DrawHud(const std::string& txt, int line) {
     if (!DrawHudOn || !Font_Print) return;
     Crumb("draw: mulai");
-    if (UseFontStyle && Font_SetStyleH) { Crumb("draw: SetFontStyle"); Font_SetStyleH(1); }
-    if (UseFontScale) {
-        if (Font_SetScale1)      { Crumb("draw: SetScale(1)"); Font_SetScale1(HudScale); }
-        else if (Font_SetScale2) { Crumb("draw: SetScale(2)"); Font_SetScale2(HudScale, HudScale * 2.f); }
+    bool left = false;
+    if (FontSetup && g_fontReady) {                                   // semua setelan di-set ulang tiap gambar -> tampilan font selalu sama
+        float k = g_scrH > 0 ? g_scrH / 448.f : 1.f;
+        if (F_Prop)    { Crumb("font: Proportional"); F_Prop(1); }
+        if (F_Back2)   { Crumb("font: Background");   F_Back2(0, 0); }
+        if (F_Justify) { Crumb("font: Justify");      F_Justify(0); }
+        if (F_Style)   { Crumb("font: Style");        F_Style(1); }
+        if (F_Scale2)      { Crumb("font: Scale2"); F_Scale2(0.36f * k * HudScale, 0.74f * k * HudScale); }
+        else if (F_Scale1) { Crumb("font: Scale1"); F_Scale1(0.74f * k * HudScale); }
+        if (F_Orient && UseFontOrient) { Crumb("font: Orient"); F_Orient(FontOrient); left = true; }
+        if (F_Wrap)    { Crumb("font: Wrap"); F_Wrap(g_scrW > 0 ? (float)g_scrW : 3000.f); }
+        if (F_Shadow)  { Crumb("font: Shadow"); F_Shadow(1); }
+    } else {                                                          // cara lama (kalau FontSetup=0 atau fungsi tidak ketemu)
+        if (UseFontStyle && Font_SetStyleH) { Crumb("draw: SetFontStyle"); Font_SetStyleH(1); }
+        if (UseFontScale) {
+            if (Font_SetScale1)      { Crumb("draw: SetScale(1)"); Font_SetScale1(HudScale); }
+            else if (Font_SetScale2) { Crumb("draw: SetScale(2)"); Font_SetScale2(HudScale, HudScale * 2.f); }
+        }
+        left = UseFontOrient && Font_SetOrient;
+        if (left) { Crumb("draw: SetOrientation"); Font_SetOrient(FontOrient); }
+        if (UseFontWrap && Font_SetWrapx) { Crumb("draw: SetWrapx"); Font_SetWrapx(g_scrW > 0 ? (float)g_scrW : 3000.f); }
+        if (UseFontColor && Font_SetColor) { Crumb("draw: SetColor"); Font_SetColor(0xFF00DCFF); }
     }
-    bool left = UseFontOrient && Font_SetOrient;
-    if (left) { Crumb("draw: SetOrientation"); Font_SetOrient(FontOrient); }
-    if (UseFontWrap && Font_SetWrapx) { Crumb("draw: SetWrapx"); Font_SetWrapx(g_scrW > 0 ? (float)g_scrW : 3000.f); }
-    if (UseFontColor && Font_SetColor) { Crumb("draw: SetColor"); Font_SetColor(0xFF00DCFF); }
     uint16_t w[128]; size_t i = 0;
     {   // UTF-8 -> huruf dasar (font game belum tentu punya aksen)
         static const char* lat = "AAAAAAACEEEEIIIIDNOOOOOxOUUUUYTsaaaaaaaceeeeiiiidnooooo/ouuuuyty";
@@ -280,16 +350,23 @@ static int ReadModel(void* ped) {                                    // CEntity:
     return (int)mdl;
 }
 static int g_genderLogs = 0;
+static int g_playerModel = -1;                                       // skin player (0 = CJ)
+static std::unordered_map<void*, float> g_lastHealth;              // darah terakhir yang masuk akal per ped
 static PedMind& MindOf(void* ped) {
     uint32_t id = (uint32_t)(uintptr_t)ped;
     int model = ReadModel(ped);
     auto it = brain.minds.find(id);
-    if (it != brain.minds.end() && model >= 0 && it->second.model != model) brain.minds.erase(it);   // alamat dipakai ulang oleh ped lain
+    if (it != brain.minds.end() && model >= 0 && it->second.model != model) { brain.minds.erase(it); g_lastHealth.erase(ped); }   // alamat dipakai ulang oleh ped lain
     bool isNew = brain.minds.find(id) == brain.minds.end();
     brain.genderHint = Vocab::GenderOfSkin(model); brain.modelHint = model;
+    int pg = Vocab::GangOfSkin(g_playerModel); if (pg == Vocab::G_NONE) pg = Vocab::G_GSF;        // CJ / skin biasa dianggap Grove Street
+    int gang = Vocab::GangOfSkin(model);
+    brain.gangHint = gang; brain.relHint = Vocab::Relation(gang, pg);
+    brain.pnameHint = (g_playerModel == 0 || g_playerModel < 0) ? "CJ" : "homie";
     PedMind& m = brain.get(id);
     if (isNew && g_genderLogs++ < 30)
-        Mark("PED baru: skin=" + std::to_string(model) + " gender=" + (m.gender == 2 ? "cewek" : m.gender == 1 ? "cowok" : "?") + " nama=" + m.name);
+        Mark("PED baru: skin=" + std::to_string(model) + " gender=" + (m.gender == 2 ? "cewek" : m.gender == 1 ? "cowok" : "?") +
+             " geng=" + (gang ? Vocab::GangName(gang) : "-") + " hubungan=" + std::to_string(m.relation) + " nama=" + m.name);
     return m;
 }
 
@@ -301,11 +378,15 @@ static bool IsDead(void* ped) {
     float h = 0;
     if (!SafeRead((uint8_t*)ped + HealthOffset, &h, 4) || !std::isfinite(h)) return false;
     if (h > 1.f && h < 400.f) {
+        if (g_lastHealth.size() > 600) g_lastHealth.clear();
+        g_lastHealth[ped] = h;
         if (g_healthSeen < 50) g_healthSeen++;
         if (g_healthLogs++ < 6) { char b[96]; snprintf(b, sizeof b, "Darah ped terbaca: %.0f (offset 0x%x)", h, HealthOffset); Mark(b); }
         return false;
     }
-    return h <= 0.5f && g_healthSeen >= 3;
+    // dianggap mati hanya kalau ped ini PERNAH terbaca hidup (darah > 1) lalu turun ke <= 0 (hindari salah deteksi kalau offset ngawur)
+    auto it = g_lastHealth.find(ped);
+    return h <= 0.5f && g_healthSeen >= 3 && it != g_lastHealth.end() && it->second > 1.f;
 }
 
 static void LogChat(const std::string& s) {
@@ -455,6 +536,7 @@ static void FrameLogic() {
         if (g_frame % 300 == 1 && g_logs++ < 12) Mark("FRAME " + std::to_string(g_frame) + ": player/posisi tidak terbaca");
         return;
     }
+    if (g_frame % 60 == 1) g_playerModel = ReadModel(player);
     if (g_frame % 5 == 0) RefreshPeds(player);
 
     // ped terdekat
@@ -504,7 +586,8 @@ static void FrameLogic() {
         talkPed = target; talkId = (uint32_t)(uintptr_t)target;
         PedMind& m = MindOf(target);
         bool id = m.lang == Lang::ID;
-        SetBubble(m.name + ": " + (m.knowsPlayer ? (id ? "Eh, lu lagi." : "Oh, it's you again.") : (id ? "Ya?" : "Yeah?")));
+        if (m.gang) SetBubble(m.name + ": " + Vocab::Spontaneous(brain.ctxOf(m), (int)m.lang, 0, brain.rng));   // anggota geng: sambutan sesuai hubungan
+        else SetBubble(m.name + ": " + (m.knowsPlayer ? (id ? "Eh, lu lagi." : "Oh, it's you again.") : (id ? "Ya?" : "Yeah?")));
         Act_FaceAndStop(talkPed); Act_TalkGesture(talkPed, true);    // hadap player, diam, gesture bicara
     }
     if (!canTalk && talkPed && !locked) EndTalk();
@@ -666,6 +749,7 @@ extern "C" void OnModLoad() {
     uintptr_t hud = FirstSym({"_ZN4CHud4DrawEv"}, &nm);                             Report("CHud::Draw", nm);
     if (hud) aml->Hook((void*)hud, (void*)Render2D_hook, (void**)&Render2D_orig);
     Mark("3. hook dipasang: " + std::string(hud ? "YA" : "TIDAK"));
+    if (FontSetup) LoadCFont();
     std::thread([]() {
         DumpSymbols("libGTASA.so", "InteractivePeds_symbols_PED.txt", {"SetLookFlag", "ClearLook", "SetHeading", "AchieveHeading", "TurnToFace", "BlendAnimation", "AddAnimation", "CAnimManager", "StandStill", "SmartFlee", "FollowLeader", "FollowPed", "CTaskManager", "CPedIntelligence", "CTaskSimpleCarSetPedOut", "SetPedState", "SetMoveState", "PlayAnim", "TaskPlayAnim", "CTaskSimpleRunNamedAnim", "CTaskComplexWander", "CTaskSimpleHandsUp", "CTaskSimpleDuck", "CPed4Task", "CPed12SetIdle"});
         DumpSymbols("libGTASA.so", "InteractivePeds_symbols.txt", {"Touch", "Keyboard", "KeyBoard", "AND_", "OS_", "Widget", "CPad", "RsGlobal"});

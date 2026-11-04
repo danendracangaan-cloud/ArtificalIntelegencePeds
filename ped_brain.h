@@ -1,5 +1,6 @@
 // ped_brain.h - "otak" tiap ped: kepribadian, mood, memori, keputusan, fallback offline.
 #pragma once
+#include <algorithm>
 #include "vocab.h"
 #include <string>
 #include <vector>
@@ -66,6 +67,8 @@ struct PedMind {
     Lang  lang = Lang::EN;               // bahasa terakhir yang dipakai player
     int   gender = 0;                    // 0 tidak diketahui, 1 cowok, 2 cewek (dari model skin)
     int   model  = -1;                   // ID skin ped
+    int   gang = 0, relation = 0;        // geng ped (Vocab::Gang) & hubungannya dengan player (-2..+2)
+    std::string pname = "homie";         // cara ped menyebut player ("CJ" / "homie")
     int   timesTalked = 0;
     float lastSeenGameTime = 0;
     float cooldown = 0;                 // detik sebelum boleh inisiatif lagi
@@ -112,6 +115,7 @@ public:
     std::mt19937 rng{std::random_device{}()};
     int genderHint = 0, modelHint = -1;            // diisi main.cpp sebelum get() untuk ped baru
     Lang defaultLang = Lang::EN;                   // bahasa terakhir yang dipakai player (ped baru ikut)
+    int gangHint = 0, relHint = 0; std::string pnameHint = "homie";   // diisi main.cpp sebelum get() untuk ped baru
 
     float rnd() { return std::uniform_real_distribution<float>(0, 1)(rng); }
 
@@ -128,6 +132,11 @@ public:
         if (m.trait == Trait::Criminal) m.greed += 30;
         if (m.trait == Trait::Grumpy)   m.anger += 25;
         if (m.trait == Trait::Nervous)  m.fear  += 25;
+        m.gang = gangHint; m.relation = relHint; m.pname = pnameHint;
+        if (m.relation >= 2)       { m.trait = Trait::Friendly; m.happy = std::max(m.happy, 75.f); m.anger = std::min(m.anger, 8.f);  m.fear = std::min(m.fear, 8.f); }
+        else if (m.relation == 1)  { m.happy = std::max(m.happy, 60.f); m.anger = std::min(m.anger, 20.f); }
+        else if (m.relation == -1) { m.anger = std::max(m.anger, 40.f); m.happy = std::min(m.happy, 50.f); if (m.trait == Trait::Friendly) m.trait = Trait::Grumpy; }
+        else if (m.relation <= -2) { m.trait = Trait::Cocky; m.anger = std::max(m.anger, 65.f); m.fear = std::min(m.fear, 8.f); m.happy = std::min(m.happy, 30.f); }
         m.clamp();
         return minds.emplace(id, m).first->second;
     }
@@ -159,9 +168,11 @@ public:
         if (dist < 5 && r < pPick) return Act::Pickpocket;
         r = rnd();
         float pInsult = (m.anger / 100.f) * .25f * (m.trait == Trait::Cocky || m.trait == Trait::Grumpy ? 1.5f : .6f);
+        pInsult *= (m.relation <= -1 ? 2.2f : m.relation >= 1 ? 0.f : 1.f);
         if (dist < 8 && r < pInsult) return Act::Insult;
         r = rnd();
         float pGreet = (m.happy / 100.f) * .3f * (m.trait == Trait::Friendly ? 1.5f : .5f) * (m.knowsPlayer ? 1.4f : 1.f);
+        pGreet *= (m.relation >= 1 ? 2.0f : m.relation <= -1 ? 0.5f : 1.f);
         if (dist < 8 && r < pGreet) return Act::Greet;
         return Act::None;
     }
@@ -278,6 +289,7 @@ public:
     Vocab::Ctx ctxOf(const PedMind& m) {
         Vocab::Ctx c; c.happy = m.happy; c.anger = m.anger; c.fear = m.fear; c.trait = (int)m.trait;
         c.name = m.name; c.knows = m.knowsPlayer; c.times = m.timesTalked;
+        c.gang = m.gang; c.rel = m.relation; c.pname = m.pname;
         for (int i = (int)m.history.size() - 1; i >= 0 && c.recent.size() < 12; i--)
             if (m.history[i].rfind("N: ", 0) == 0) c.recent.push_back(m.history[i].substr(3));
         return c;
@@ -407,6 +419,8 @@ public:
             case Intent::Fight:   ok = (m.trait == Trait::Cocky || angry || m.trait == Trait::Criminal); break;
             default: ok = false; break;
         }
+        if (m.relation <= -1 && (in == Intent::Follow || in == Intent::Stop || in == Intent::Dance || in == Intent::HandsUp || in == Intent::Wave)) ok = false;   // musuh tidak menurut
+        if (m.relation >= 2  && (in == Intent::Follow || in == Intent::Stop || in == Intent::Dance || in == Intent::Wave)) ok = true;                           // satu geng: siap
         action = ok ? IntentName(in) : "none";
         return Vocab::IntentLine((int)in, ok, (int)lang, rng);
     }

@@ -208,6 +208,38 @@ POOL(STOP_EN, "the","and","you","your","are","was","were","this","that","with","
 POOL(STOP_ID, "yang","dan","atau","ini","itu","apa","siapa","kenapa","gimana","bagaimana","kapan","dimana","untuk","sama","juga","lagi","udah","sudah","belum","mau","bisa","boleh","jangan","tolong","aku","gua","gue","saya","kamu","kau","dia","kita","kami","mereka","nih","dong","sih","deh","kok","aja","banget","nggak","enggak","tidak","bukan","ada","punya","suka","benci","kalau","kalo","karena","tapi","tetapi","iya","oke","halo","hai","bro","bang","emang","pernah","lebih","dari","dengan","pada","akan","ke","di","buat")
 POOL(STOP_ES, "que","qué","como","cómo","para","pero","porque","donde","dónde","cuando","quien","quién","tengo","quiero","estoy","eres","tienes","puedes","mucho","muy","también","amigo","hola","gracias","por","con","los","las","una","uno","del","esto","eso","aqui","aquí")
 
+// ===================== GANG: pool dengan token {g}=nama geng {c}=warna {rv}=musuh {p}=nama player =====================
+POOL(GW_greet, "{p}! Look who's back on {g} turf!","Ayy, {p}! What's good?","Yo {p}, you good? Welcome home.","{p}, my guy! {g} stays winning.","Well damn, it's {p}. Come here!","Welcome back, {p}. Everybody's been asking about you.","{c} love, {p}. You know it.","There he is! {p}! How's the family?","Ayy, {p}, you're one of us. Always.","{p}, glad you're breathing. Stay close.","Look at this! {p} in the building!","Hey, family. You hungry? We got food.","{g} for life, {p}!","Don't be a stranger, {p}. This is your home.","Aye, {p}! Hands up if you missed me.","{p}! You're good with me, always.")
+POOL(GW_howare, "Livin' good now that you're here, {p}.","Strong, strong. {g} holding it down.","Can't complain, {p}. Not on my turf.","Better than the {rv}, that's for sure.","Chillin', blessed, repping {g}.","All good, fam. You?","Fine now. Better now that you showed.","Keeping it {c}, {p}.")
+POOL(GW_bye, "Stay safe, {p}. {g} got your back.","Watch your six out there.","Come back soon, {p}.","Peace, family.","Go get 'em, {p}.","Don't let the {rv} catch you slipping.","{g} for life, {p}.","Catch you on the flip, fam.")
+POOL(GW_name, "I'm {n}. {g} all day, {p}.","{n}. You know me, {p}. Everyone does.","They call me {n}. I roll with {g}.","{n}, {g} soldier. At your service.","It's {n}, fam. Don't forget it.","{n}. Keep it {c}.")
+POOL(GW_thanks, "Anything for family, {p}.","Ain't nothing, {p}.","We look out for each other.","That's what {g} does.","No thanks needed, fam.")
+POOL(GW_default, "You know how it is, {p}.","Stay {c}, {p}.","Preach, {p}, preach.","That's real talk right there.","Fam, I hear you.","{g} on top, always.","Straight up.","For real, for real.","Ain't that the truth.","Keep your head up, {p}.","Watch out for the {rv}, they're lurking.","We all eat when we stick together.","Say less, fam.","I got you, {p}.")
+POOL(GH_greet, "You lost, {p}? This is {g} turf.","What you doing around here, fool?","Wrong side of town, {p}.","Ay, you got some nerve showing up here.","Hmph. {p}. Keep walking.","This ain't your block, scrub.","You want trouble? Because this is how you get trouble.","Eyes forward, {p}. And keep 'em off me.","We don't do friendly with your kind.","Better have a reason to be here.","Look what the {rv} dragged in.","You in {c} territory now, fool.","Don't stare, busta.","What you want, outsider?")
+POOL(GH_howare, "Better than you, fool.","None of your business, {p}.","I'm fine. You should worry about yourself.","Great, until you showed up.","Ask me when you're not on my turf.","Why you wanna know, scrub?")
+POOL(GH_bye, "Yeah, keep walking.","Get off my block.","Don't come back, {p}.","Next time, you won't walk away.","Bye, fool. Don't turn around.","Disappear.","We're done here.","See you in the wrong place, {p}.")
+POOL(GH_name, "I'm {n}, and you better remember it.","{n}. {g}. That's all you need.","Why you asking? I'm {n}. Now go.","The name's {n}. Don't forget who runs this.","{n}. Move along, {p}.","None of your business. {n}. There.")
+POOL(GH_thanks, "Don't mention it. Ever.","Whatever. Go.","I didn't do it for you.","Yeah, yeah, don't make it weird.","Save it, {p}.")
+POOL(GH_default, "I ain't got time for you.","Talk to somebody who cares.","You're pushing it, {p}.","{rv} loves hanging with you? Figures.","Mm-hmm. Keep talking, see what happens.","Stay out of {g} business.","You think you're special? You ain't.","Say what you came to say and go.","Man, whatever.","Don't test me, scrub.","I'm not scared of you, {p}.","Do yourself a favor, leave.","Boring. Next.","You done?")
+POOL(GH_insult, "Look at this clown.","Bet you can't even fight, {p}.","You smell like {rv} cologne.","Scrub. Total scrub.","Walk like that and you'll get lost, fool.","Nice outfit. Ask your mama to dress you?","You a joke, {p}.","Where's your crew? Oh, right, nowhere.","Trash. Pure trash.","Keep dreaming, busta.","Man, you're a walking mistake.","Get outta my face, {p}.")
+POOL(GC_greet, "Yes? Can I help you?","State your business.","Hm. What do you need?","Keep it polite and we'll get along.","You're not from around here.","I'm listening. Briefly.","Do I know you?","Make it quick.","Speak. Respectfully.","Don't waste my time.")
+POOL(GC_default, "I see.","Understood.","That is none of my concern.","Interesting. Continue.","We handle our own business.","Let's keep it simple.","I don't discuss that.","Respect goes both ways.","Mind your manners and we're fine.","Noted.")
+POOL(GC_bye, "Goodbye.","Safe travels.","Don't make me regret this chat.","Until next time.","Move along.","Have a good day.")
+POOL(GC_name, "I'm {n}. That is enough.","{n}. And you?","They call me {n}.","{n}. Pleased, I suppose.","Names are for friends. {n}, though.")
+POOL(GANGTALK, "{g}? That's family. {rv}? That's trouble.","I rep {g}, always have, always will.","Colors matter. I wear {c} for a reason.","The {rv} think they run things. They don't.","Gang life ain't a game, {p}.","I joined {g} because they had my back.","Respect the colors, respect yourself.","{g} stays strong, no matter what.","Turf wars are tiring, but somebody's gotta do it.","You don't mess with {g}. Simple as that.")
+POOL(ID_GW_greet, "{p}! Akhirnya balik juga ke wilayah {g}!","Wih, {p}! Apa kabar, keluarga?","{p}, selamat datang di rumah!","Yo {p}! {g} selalu di hati!","Lu udah gua anggap saudara, {p}.","Gimana, {p}? Aman?")
+POOL(ID_GH_greet, "Lu nyasar, {p}? Ini wilayah {g}.","Ngapain lu di sini, culun?","Salah tempat, {p}.","Jangan liatin gua, busta.","Berani juga lu muncul di sini.","Minggir sebelum gua marah.")
+POOL(ES_GW_greet, "¡{p}! ¡Qué bueno verte, hermano!","Bienvenido a casa, {p}.","¡{g} para siempre!","¡Ey, {p}! ¿Todo bien, familia?")
+POOL(ES_GH_greet, "¿Qué haces aquí, {p}? Esta es zona de {g}.","Largo de aquí, ese.","No eres bienvenido.","Cuidado con lo que haces, {p}.")
+POOL(TAG_GSF, "cuz","homie","fam","G")
+POOL(TAG_BALLAS, "fool","busta","scrub")
+POOL(TAG_VAGOS, "ese","vato","homes","carnal")
+POOL(TAG_AZTECAS, "carnal","esa","mijo","vato")
+POOL(TAG_ASIAN, "friend")
+POOL(TAG_MAFIA, "paisan","pal","kid")
+POOL(TAG_RIFA, "compa","hermano","homie")
+POOL(TAG_BIKER, "dude","brother","buddy")
+
 } // namespace VocabData
 
 // ======================================================================
@@ -472,9 +504,61 @@ inline std::string Compose(int lang, std::mt19937& g) {
     return std::string("My ") + PICKP(G_EN_rel) + " says " + PICKP(G_EN_claim) + ". " + PICKP(G_EN_tail);
 }
 
+
+// ---------- geng & hubungan dengan player ----------
+enum Gang { G_NONE = 0, G_GSF, G_BALLAS, G_VAGOS, G_AZTECAS, G_TRIAD, G_DANANG, G_MAFIA, G_RIFA, G_BIKER };
+inline int GangOfSkin(int m) {                                         // dari ID skin GTA SA (perkiraan terbaik)
+    switch (m) {
+        case 105: case 106: case 107: case 269: case 270: case 271: return G_GSF;
+        case 102: case 103: case 104: return G_BALLAS;
+        case 108: case 109: case 110: return G_VAGOS;
+        case 114: case 115: case 116: case 292: return G_AZTECAS;
+        case 117: case 118: case 120: return G_TRIAD;
+        case 121: case 122: case 123: return G_DANANG;
+        case 111: case 112: case 113: case 124: case 125: case 126: case 127: return G_MAFIA;
+        case 173: case 174: case 175: return G_RIFA;
+        case 100: case 247: case 248: return G_BIKER;
+        default: return G_NONE;
+    }
+}
+inline const char* GangName(int g)  { static const char* n[] = {"", "Grove Street", "Ballas", "Vagos", "Aztecas", "Triad", "Da Nang", "Mafia", "Rifa", "bikers"}; return n[g < 0 || g > 9 ? 0 : g]; }
+inline const char* GangColor(int g) { static const char* n[] = {"", "green", "purple", "yellow", "turquoise", "red", "jade", "black", "blue", "leather"}; return n[g < 0 || g > 9 ? 0 : g]; }
+inline const char* GangRival(int g) { static const char* n[] = {"", "Ballas", "Grove Street", "Aztecas", "Vagos", "Da Nang", "Triad", "Triad", "Aztecas", "the cops"}; return n[g < 0 || g > 9 ? 0 : g]; }
+// +2 satu geng/sekutu dekat, +1 sahabat, 0 netral, -1 saingan, -2 musuh bebuyutan
+inline int Relation(int ped, int player) {
+    if (ped == G_NONE) return 0;
+    if (ped == player) return 2;
+    auto is = [&](int a, int b) { return (ped == a && player == b) || (ped == b && player == a); };
+    if (is(G_GSF, G_RIFA)) return 1;
+    if (is(G_GSF, G_BALLAS) || is(G_VAGOS, G_AZTECAS) || is(G_TRIAD, G_DANANG)) return -2;
+    if (is(G_GSF, G_VAGOS) || is(G_GSF, G_AZTECAS) || is(G_BALLAS, G_VAGOS) || is(G_BALLAS, G_AZTECAS) || is(G_MAFIA, G_TRIAD) || is(G_MAFIA, G_DANANG)) return -1;
+    return 0;
+}
+inline Pool GangTags(int g) {
+    switch (g) { case G_GSF: return PL(TAG_GSF); case G_BALLAS: return PL(TAG_BALLAS); case G_VAGOS: return PL(TAG_VAGOS);
+                 case G_AZTECAS: return PL(TAG_AZTECAS); case G_TRIAD: case G_DANANG: return PL(TAG_ASIAN); case G_MAFIA: return PL(TAG_MAFIA);
+                 case G_RIFA: return PL(TAG_RIFA); case G_BIKER: return PL(TAG_BIKER); default: return NOPOOL; }
+}
+// kind: 0 sambutan hangat, 1 permusuhan, 2 dingin/formal
+inline Pool GangPool(int cat, int kind, int lang) {
+    if (lang == 1 && cat == C_GREET) return kind == 0 ? PL(ID_GW_greet) : kind == 1 ? PL(ID_GH_greet) : NOPOOL;
+    if (lang == 2 && cat == C_GREET) return kind == 0 ? PL(ES_GW_greet) : kind == 1 ? PL(ES_GH_greet) : NOPOOL;
+    if (lang != 0) return NOPOOL;
+    switch (cat) {
+        case C_GREET:  return kind == 0 ? PL(GW_greet)  : kind == 1 ? PL(GH_greet)  : PL(GC_greet);
+        case C_HOWARE: return kind == 0 ? PL(GW_howare) : kind == 1 ? PL(GH_howare) : NOPOOL;
+        case C_BYE:    return kind == 0 ? PL(GW_bye)    : kind == 1 ? PL(GH_bye)    : PL(GC_bye);
+        case C_NAME:   return kind == 0 ? PL(GW_name)   : kind == 1 ? PL(GH_name)   : PL(GC_name);
+        case C_THANKS: return kind == 0 ? PL(GW_thanks) : kind == 1 ? PL(GH_thanks) : NOPOOL;
+        case C_DEFAULT: return kind == 0 ? PL(GW_default) : kind == 1 ? PL(GH_default) : PL(GC_default);
+        default: return NOPOOL;
+    }
+}
+
 // ---------- konteks ped & balasan utama ----------
 struct Ctx { float happy = 50, anger = 20, fear = 20; int trait = 0; /*0 friendly,1 grumpy,2 criminal,3 nervous,4 cocky*/
-             std::string name; bool knows = false; int times = 0; std::vector<std::string> recent; };
+             std::string name; bool knows = false; int times = 0; std::vector<std::string> recent;
+             int gang = 0, rel = 0; std::string pname = "homie"; };
 
 inline int MoodVariant(const Ctx& c) { return c.anger > 60 ? 1 : c.fear > 60 ? 2 : c.happy > 65 ? 3 : 0; }
 inline int ToneVariant(const Ctx& c) {                               // untuk hinaan/ancaman
@@ -484,6 +568,10 @@ inline int ToneVariant(const Ctx& c) {                               // untuk hi
 }
 inline std::string Fill(std::string s, const Ctx& c, const std::string& w = "") {
     for (size_t p; (p = s.find("{n}")) != std::string::npos; ) s.replace(p, 3, c.name);
+    for (size_t p; (p = s.find("{p}")) != std::string::npos; ) s.replace(p, 3, c.pname);
+    for (size_t p; (p = s.find("{g}")) != std::string::npos; ) s.replace(p, 3, GangName(c.gang));
+    for (size_t p; (p = s.find("{c}")) != std::string::npos; ) s.replace(p, 3, GangColor(c.gang));
+    for (size_t p; (p = s.find("{rv}")) != std::string::npos; ) s.replace(p, 4, GangRival(c.gang));
     for (size_t p; (p = s.find("{w}")) != std::string::npos; ) {
         std::string r = w.empty() ? std::string("that") : w;
         if (p == 0 && !r.empty() && (unsigned char)r[0] < 128) r[0] = (char)toupper((unsigned char)r[0]);
@@ -499,6 +587,16 @@ inline std::string PickFresh(const Pool& p, const Ctx& c, std::mt19937& g, const
     std::string s;
     for (int k = 0; k < 14; k++) { s = Fill(Pick(p, g), c, w); if (!WasRecent(c, s)) return s; }
     return s;
+}
+
+
+inline std::string AddTag(std::string s, int gang, std::mt19937& g) {   // tambah sebutan khas geng ("..., cuz.")
+    Pool tp = GangTags(gang);
+    if (tp.n == 0 || s.size() < 5) return s;
+    std::string tag = Pick(tp, g);
+    char last = s.back();
+    if (last == '.' || last == '!' || last == '?') { s.pop_back(); return s + ", " + tag + last; }
+    return s + ", " + tag;
 }
 
 inline bool shortMsg0(const std::string& s) { return s.size() < 6; }
@@ -537,26 +635,42 @@ inline std::string Reply(const Ctx& c, const std::string& said, int lang, std::m
     }
     if (shortMsg0(said)) kw.clear();
     if (first == C_LIKE && kw.empty()) first = C_QUESTION;           // butuh kata yang ditanya
+    // ped anggota geng: sambutan hangat / dingin / permusuhan sesuai hubungan dengan geng player
+    Pool gp = NOPOOL;
+    if (c.gang) {
+        unsigned P = c.rel >= 2 ? 75 : c.rel == 1 ? 55 : c.rel == 0 ? 40 : c.rel == -1 ? 60 : 75;
+        int kind = c.rel >= 1 ? 0 : c.rel <= -2 ? 1 : c.rel == 0 ? 2 : (int)(g() % 2 ? 1 : 2);
+        if (first == C_GANG) { if (lang == 0 && g() % 100 < 80) gp = PL(GANGTALK); }
+        else if (first == C_INSULT) { if (c.rel <= -1 && lang == 0 && g() % 100 < 70) gp = PL(GH_insult); }
+        else if (first == C_GREET || first == C_HOWARE || first == C_BYE || first == C_NAME || first == C_THANKS || first == C_DEFAULT) {
+            if (g() % 100 < P) gp = GangPool(first, kind, lang);
+        }
+    }
     std::string out;
     bool shortMsg = said.size() < 6;                                  // "ok", "hmm", "bro": jawab singkat saja
-    if (!shortMsg && (first == C_DEFAULT || first == C_QUESTION || first == C_WHAT || first == C_WHO)) {
+    if (gp.n == 0 && !shortMsg && (first == C_DEFAULT || first == C_QUESTION || first == C_WHAT || first == C_WHO)) {
         unsigned r = g() % 100;
         if (!kw.empty() && r < 55) out = PickFresh(PoolEcho(lang), c, g, kw);      // ulang topik dari player supaya nyambung
         else if (r < 63) out = PickFresh(PoolRandom(lang), c, g);
         else if (r < 68) out = PickFresh(PoolAbsurd(lang), c, g);
         else if (r < 73) out = Fill(Compose(lang, g), c);
     }
-    if (out.empty()) out = PickFresh(GetPool(lang, first, v), c, g, kw);
+    if (out.empty()) out = gp.n ? PickFresh(gp, c, g, kw) : PickFresh(GetPool(lang, first, v), c, g, kw);
     if (second >= 0 && second != first && second != C_LIKE && second != C_STORY && g() % 100 < 18) {   // kadang dua topik sekaligus
         int v2 = (second == C_THREAT || second == C_INSULT) ? ToneVariant(c) : MoodVariant(c);
         out += " " + PickFresh(GetPool(lang, second, v2), c, g, kw);
     }
+    if (c.gang && g() % 100 < 35) out = AddTag(out, c.gang, g);
     return out;
 }
 
 // Ucapan spontan ped. kind: 0 sapaan, 1 olokan, 2 gumaman
 inline std::string Spontaneous(const Ctx& c, int lang, int kind, std::mt19937& g) {
-    if (kind == 1) return PickFresh(PoolSpInsult(lang), c, g);
+    if (kind == 1) {
+        if (c.gang && c.rel >= 1) { Pool gp = GangPool(C_GREET, 0, lang); if (gp.n) return PickFresh(gp, c, g); }          // ke temen sendiri: sapaan, bukan hinaan
+        if (c.gang && c.rel <= -1 && lang == 0) return PickFresh(PL(GH_insult), c, g);
+        return PickFresh(PoolSpInsult(lang), c, g);
+    }
     if (kind == 2) {
         unsigned r = g() % 100;
         if (r < 40) return PickFresh(PoolRandom(lang), c, g);
@@ -565,6 +679,11 @@ inline std::string Spontaneous(const Ctx& c, int lang, int kind, std::mt19937& g
         return PickFresh(PoolMumble(lang), c, g);
     }
     unsigned r = g() % 100;
+    if (c.gang && r < 70) {                                           // anggota geng menyapa sesuai hubungan dengan player
+        int kind = c.rel >= 1 ? 0 : c.rel <= -1 ? 1 : 2;
+        Pool gp = GangPool(C_GREET, kind, lang);
+        if (gp.n) { std::string o = PickFresh(gp, c, g); return g() % 100 < 35 ? AddTag(o, c.gang, g) : o; }
+    }
     if (r < 25) return PickFresh(PoolSpGreet(lang), c, g);
     if (r < 40) return PickFresh(PoolRandom(lang), c, g);
     return PickFresh(GetPool(lang, C_GREET, MoodVariant(c)), c, g);
