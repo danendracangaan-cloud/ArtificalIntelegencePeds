@@ -240,6 +240,21 @@ POOL(TAG_MAFIA, "paisan","pal","kid")
 POOL(TAG_RIFA, "compa","hermano","homie")
 POOL(TAG_BIKER, "dude","brother","buddy")
 
+// ===================== PED MARAH (habis berantem / dipukul player) =====================
+POOL(AG_greet, "You've got some nerve talking to me now!","Back off before I finish this!","Come on then, you want round two?","Don't 'hello' me, you started this!","I'm not done with you!","Say one more word and I swing again.","You wanna talk? Use your fists!","Get away from me!","Why are you still here?!","Oh, now you wanna chat? Funny.","Don't smile at me. I'm still furious.","What?! What do you want now?!")
+POOL(AG_howare, "Pissed off! Thanks to you!","How do I look? Angry!","Terrible. Because of you.","Is that a joke?!","How do you think?! You hit me!","Furious. Next question.")
+POOL(AG_default, "I'm going to knock your teeth out.","Shut up and fight!","You're dead meat.","I'm not listening to you.","Coward!","Come on, hit me again!","This isn't over.","You think words fix this?","Keep talking, see what happens.","I'll remember this.","You don't get to act normal after that.","My blood's still boiling, pal.","Talk to my fist.","You want an apology? Earn it.")
+POOL(AG_bye, "Yeah, run away!","Get lost before I change my mind.","Next time you're done.","Walk away, coward.","Don't come back.","Good. Disappear.")
+POOL(AG_name, "None of your business!","Names? You're about to learn mine the hard way.","I'm {n}, and I'm angry. Remember that.","{n}. The guy you just messed with.")
+POOL(AG_thanks, "Don't thank me, I'm still mad.","Save it.","I didn't do it for you!","Whatever. Still angry.")
+POOL(AG_sorry, "Sorry? Sorry doesn't fix a broken nose!","Too late for sorry!","Apology not accepted. Yet.","You think that's enough? It's not.")
+POOL(AG_insult, "You're a coward!","Weak! Pathetic!","I've seen better fighters in kindergarten.","Look at you, all talk.","You hit like a toddler.","Loser!","Pathetic.","Come back here, you rat!","Is that all you've got?","You're nothing!")
+POOL(ID_AG_greet, "Berani juga lu ngomong sama gua sekarang!","Jangan deket-deket, gua belum selesai!","Mau ronde dua? Sini!","Jangan 'halo-halo' ke gua, lu yang mulai!","Gua masih emosi, minggir!","Ngapain lu masih di sini?!")
+POOL(ID_AG_default, "Gua hajar lu sekarang juga!","Diem, atau gua pukul lagi!","Penakut lu!","Ayo, pukul gua lagi kalau berani!","Urusan kita belum kelar.","Percuma ngomong, gua masih marah!","Sini kalau berani!","Lu pikir ngomong doang cukup?")
+POOL(ID_AG_bye, "Yaudah kabur sana, pengecut!","Pergi sebelum gua berubah pikiran.","Jangan balik lagi.","Hilang lu dari sini!")
+POOL(ID_AG_insult, "Pengecut!","Lemah! Payah!","Mukul aja nggak becus.","Cuma bisa ngomong doang lu!","Sampah!","Dasar tikus!")
+POOL(ID_AG_sorry, "Maaf? Maaf nggak nyembuhin hidung gua!","Kasep, udah telat minta maaf!","Maaf lu belum cukup.")
+
 } // namespace VocabData
 
 // ======================================================================
@@ -555,10 +570,24 @@ inline Pool GangPool(int cat, int kind, int lang) {
     }
 }
 
+
+inline Pool AgPool(int cat, int lang) {                                // ped lagi marah ke player
+    if (lang == 1) {
+        switch (cat) { case C_GREET: return PL(ID_AG_greet); case C_BYE: return PL(ID_AG_bye); case C_INSULT: case C_THREAT: return PL(ID_AG_insult);
+                       case C_SORRY: return PL(ID_AG_sorry); default: return PL(ID_AG_default); }
+    }
+    if (lang != 0) return NOPOOL;
+    switch (cat) {
+        case C_GREET: return PL(AG_greet); case C_HOWARE: return PL(AG_howare); case C_BYE: return PL(AG_bye); case C_NAME: return PL(AG_name);
+        case C_THANKS: return PL(AG_thanks); case C_SORRY: return PL(AG_sorry); case C_INSULT: case C_THREAT: return PL(AG_insult);
+        default: return PL(AG_default);
+    }
+}
+
 // ---------- konteks ped & balasan utama ----------
 struct Ctx { float happy = 50, anger = 20, fear = 20; int trait = 0; /*0 friendly,1 grumpy,2 criminal,3 nervous,4 cocky*/
              std::string name; bool knows = false; int times = 0; std::vector<std::string> recent;
-             int gang = 0, rel = 0; std::string pname = "homie"; };
+             int gang = 0, rel = 0; std::string pname = "homie"; bool aggro = false; };
 
 inline int MoodVariant(const Ctx& c) { return c.anger > 60 ? 1 : c.fear > 60 ? 2 : c.happy > 65 ? 3 : 0; }
 inline int ToneVariant(const Ctx& c) {                               // untuk hinaan/ancaman
@@ -635,9 +664,10 @@ inline std::string Reply(const Ctx& c, const std::string& said, int lang, std::m
     }
     if (shortMsg0(said)) kw.clear();
     if (first == C_LIKE && kw.empty()) first = C_QUESTION;           // butuh kata yang ditanya
-    // ped anggota geng: sambutan hangat / dingin / permusuhan sesuai hubungan dengan geng player
     Pool gp = NOPOOL;
-    if (c.gang) {
+    if (c.aggro && g() % 100 < 88) gp = AgPool(first, lang);           // lagi marah: jangan ramah, apa pun topiknya
+    // ped anggota geng: sambutan hangat / dingin / permusuhan sesuai hubungan dengan geng player
+    if (c.gang && gp.n == 0) {
         unsigned P = c.rel >= 2 ? 75 : c.rel == 1 ? 55 : c.rel == 0 ? 40 : c.rel == -1 ? 60 : 75;
         int kind = c.rel >= 1 ? 0 : c.rel <= -2 ? 1 : c.rel == 0 ? 2 : (int)(g() % 2 ? 1 : 2);
         if (first == C_GANG) { if (lang == 0 && g() % 100 < 80) gp = PL(GANGTALK); }
@@ -660,12 +690,16 @@ inline std::string Reply(const Ctx& c, const std::string& said, int lang, std::m
         int v2 = (second == C_THREAT || second == C_INSULT) ? ToneVariant(c) : MoodVariant(c);
         out += " " + PickFresh(GetPool(lang, second, v2), c, g, kw);
     }
-    if (c.gang && g() % 100 < 35) out = AddTag(out, c.gang, g);
+    if (c.gang && !c.aggro && g() % 100 < 35) out = AddTag(out, c.gang, g);
     return out;
 }
 
 // Ucapan spontan ped. kind: 0 sapaan, 1 olokan, 2 gumaman
 inline std::string Spontaneous(const Ctx& c, int lang, int kind, std::mt19937& g) {
+    if (c.aggro) {                                                    // lagi marah: sapaan = bentakan, tidak ada "halo ramah"
+        Pool ap = AgPool(kind == 1 ? C_INSULT : kind == 0 ? C_GREET : C_DEFAULT, lang);
+        if (ap.n) return PickFresh(ap, c, g);
+    }
     if (kind == 1) {
         if (c.gang && c.rel >= 1) { Pool gp = GangPool(C_GREET, 0, lang); if (gp.n) return PickFresh(gp, c, g); }          // ke temen sendiri: sapaan, bukan hinaan
         if (c.gang && c.rel <= -1 && lang == 0) return PickFresh(PL(GH_insult), c, g);

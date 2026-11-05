@@ -288,8 +288,8 @@ static void DrawHud(const std::string& txt, int line) {
         if (F_Back2)   { Crumb("font: Background");   F_Back2(0, 0); }
         if (F_Justify) { Crumb("font: Justify");      F_Justify(0); }
         if (F_Style)   { Crumb("font: Style");        F_Style(1); }
-        if (F_Scale2)      { Crumb("font: Scale2"); F_Scale2(0.36f * k * HudScale, 0.74f * k * HudScale); }
-        else if (F_Scale1) { Crumb("font: Scale1"); F_Scale1(0.74f * k * HudScale); }
+        if (F_Scale2)      { Crumb("font: Scale2"); F_Scale2(0.72f * k * HudScale, 1.48f * k * HudScale); }
+        else if (F_Scale1) { Crumb("font: Scale1"); F_Scale1(1.48f * k * HudScale); }
         if (F_Orient && UseFontOrient) { Crumb("font: Orient"); F_Orient(FontOrient); left = true; }
         if (F_Wrap)    { Crumb("font: Wrap"); F_Wrap(g_scrW > 0 ? (float)g_scrW : 3000.f); }
         if (F_Shadow)  { Crumb("font: Shadow"); F_Shadow(1); }
@@ -324,7 +324,7 @@ static void DrawHud(const std::string& txt, int line) {
     float x = HudX, y = HudY + HudLine * line;
     if (HudAuto && g_scrW > 0 && g_scrH > 0) {                        // posisi otomatis dari ukuran layar
         x = left && FontOrient == 1 ? g_scrW * 0.04f : g_scrW * 0.5f;  // rata kiri -> pinggir kiri; selain itu -> tengah
-        y = g_scrH * HudYFrac + g_scrH * 0.05f * line;
+        y = g_scrH * HudYFrac + g_scrH * 0.065f * line;
     }
     Crumb("draw: PrintString");
     Font_Print(x, y, w);
@@ -350,6 +350,7 @@ static int ReadModel(void* ped) {                                    // CEntity:
     return (int)mdl;
 }
 static int g_genderLogs = 0;
+static CVector g_playerPos = {0, 0, 0}; static bool g_playerPosOk = false;
 static int g_playerModel = -1;                                       // skin player (0 = CJ)
 static std::unordered_map<void*, float> g_lastHealth;              // darah terakhir yang masuk akal per ped
 static PedMind& MindOf(void* ped) {
@@ -372,12 +373,25 @@ static PedMind& MindOf(void* ped) {
 
 
 // ---- Deteksi ped mati (darah <= 0). Baru dipercaya setelah offset terbukti masuk akal (>=3 ped dengan darah 1..400). ----
-static int g_healthSeen = 0, g_healthLogs = 0;
+static int g_healthSeen = 0, g_healthLogs = 0, g_hurtLogs = 0;
+static bool g_healthCalibrated = false;
+
+// Ped/player kena pukul -> ped itu marah selama 60 detik (chat berubah jadi bentakan, bukan sapaan)
+static void OnPedHurt(void* ped) {
+    CVector q;
+    if (!g_playerPosOk || !EntityPos(ped, q) || std::hypot(q.x - g_playerPos.x, q.y - g_playerPos.y) > 4.5f) return;
+    PedMind& pm = MindOf(ped);
+    if (pm.aggroT <= 0 && g_hurtLogs++ < 25) Mark("PED KENA PUKUL -> marah: " + pm.name);
+    brain.provoke(pm);
+}
+
 static bool IsDead(void* ped) {
     if (!UseDeathCheck || !ped) return false;
     float h = 0;
     if (!SafeRead((uint8_t*)ped + HealthOffset, &h, 4) || !std::isfinite(h)) return false;
     if (h > 1.f && h < 400.f) {
+        auto it0 = g_lastHealth.find(ped);
+        if (it0 != g_lastHealth.end() && h < it0->second - 0.5f) OnPedHurt(ped);          // darah turun = kena pukul/tembak
         if (g_lastHealth.size() > 600) g_lastHealth.clear();
         g_lastHealth[ped] = h;
         if (g_healthSeen < 50) g_healthSeen++;
@@ -387,6 +401,58 @@ static bool IsDead(void* ped) {
     // dianggap mati hanya kalau ped ini PERNAH terbaca hidup (darah > 1) lalu turun ke <= 0 (hindari salah deteksi kalau offset ngawur)
     auto it = g_lastHealth.find(ped);
     return h <= 0.5f && g_healthSeen >= 3 && it != g_lastHealth.end() && it->second > 1.f;
+}
+
+// ---- Kalibrasi otomatis offset darah: cari float yang awalnya 100.0 pada banyak ped dan pernah TURUN (kena pukul) ----
+static const int CAL_BASE = 0x400, CAL_N = 192;
+struct CalCand { int init100 = 0, drops = 0; };
+static CalCand g_cal[CAL_N];
+static std::unordered_map<void*, std::vector<float>> g_calPrev;
+static void CalibrateHealth(void* ped) {
+    if (g_healthCalibrated || !ped) return;
+    float cur[CAL_N];
+    if (!SafeRead((uint8_t*)ped + CAL_BASE, cur, sizeof cur)) return;
+    for (int i = 0; i < CAL_N; i++) if (!std::isfinite(cur[i])) cur[i] = 0.f;
+    auto it = g_calPrev.find(ped);
+    if (it == g_calPrev.end()) {
+        if (g_calPrev.size() > 300) g_calPrev.clear();
+        for (int i = 0; i < CAL_N; i++) if (std::fabs(cur[i] - 100.f) < 0.01f) g_cal[i].init100++;
+        g_calPrev[ped].assign(cur, cur + CAL_N);
+    } else {
+        for (int i = 0; i < CAL_N; i++) {
+            float p = it->second[i];
+            if (p > 1.f && p < 400.f && cur[i] < p - 0.5f && cur[i] > -400.f && cur[i] < 400.f) g_cal[i].drops++;
+        }
+        it->second.assign(cur, cur + CAL_N);
+    }
+    int best = -1;
+    for (int i = 0; i < CAL_N; i++) {
+        if (g_cal[i].drops < 1 || g_cal[i].init100 < 3) continue;
+        if (best < 0 || g_cal[i].drops > g_cal[best].drops || (g_cal[i].drops == g_cal[best].drops && CAL_BASE + i * 4 == HealthOffset)) best = i;
+    }
+    if (best >= 0) {
+        HealthOffset = CAL_BASE + best * 4; g_healthCalibrated = true; g_lastHealth.clear(); g_healthSeen = 0;
+        char b[160]; snprintf(b, sizeof b, "KALIBRASI: offset darah ditemukan 0x%x (awal=100 pada %d ped, turun %d kali) - disimpan ke ini", HealthOffset, g_cal[best].init100, g_cal[best].drops);
+        Mark(b);
+        TryWrite(VIS_DIR + "InteractivePeds.ini");
+    }
+}
+
+// ---- Player kena pukul -> ped terdekat dianggap penyerang ----
+static float g_prevPlayerHealth = -1; static int g_lastHitFrame = -100000;
+static void CheckPlayerHit(void* player, void* nearest, float best, int frame) {
+    if (!UseDeathCheck || (!g_healthCalibrated && g_healthSeen < 3)) return;                     // offset belum terbukti masuk akal
+    float h = 0;
+    if (!SafeRead((uint8_t*)player + HealthOffset, &h, 4) || !std::isfinite(h) || h <= 1.f || h >= 400.f) return;
+    if (g_prevPlayerHealth > 1.f && h < g_prevPlayerHealth - 0.9f && frame - g_lastHitFrame > 20) {
+        g_lastHitFrame = frame;
+        if (nearest && best < 3.0f) {
+            PedMind& pm = MindOf(nearest);
+            if (pm.aggroT <= 0 && g_hurtLogs++ < 25) Mark("PLAYER KENA PUKUL, penyerang diduga: " + pm.name);
+            brain.provoke(pm);
+        }
+    }
+    g_prevPlayerHealth = h;
 }
 
 static void LogChat(const std::string& s) {
@@ -536,15 +602,24 @@ static void FrameLogic() {
         if (g_frame % 300 == 1 && g_logs++ < 12) Mark("FRAME " + std::to_string(g_frame) + ": player/posisi tidak terbaca");
         return;
     }
+    g_playerPos = pp; g_playerPosOk = true;
     if (g_frame % 60 == 1) g_playerModel = ReadModel(player);
     if (g_frame % 5 == 0) RefreshPeds(player);
 
     // ped terdekat
-    void* nearest = nullptr; float best = 1e9f;
+    void* nearest = nullptr; float best = 1e9f; int calSampled = 0;
+    if (!g_healthCalibrated && g_frame % 8 == 0) CalibrateHealth(player);
     for (void* p : g_peds) {
         CVector q; if (!EntityPos(p, q)) continue;
         float d = std::hypot(q.x - pp.x, q.y - pp.y);
+        if (!g_healthCalibrated && g_frame % 8 == 0 && d < 22.f && calSampled < 8) { CalibrateHealth(p); calSampled++; }
         if (d < best && !IsDead(p)) { best = d; nearest = p; }
+    }
+
+    CheckPlayerHit(player, nearest, best, g_frame);                   // player dipukul ped terdekat -> ped itu marah
+    if (talkPed) {                                                    // lawan bicara baru saja memukul / dipukul -> langsung membentak
+        PedMind& tm = brain.get(talkId);
+        if (tm.aggroSay) { tm.aggroSay = false; SetBubble(tm.name + ": " + Vocab::Spontaneous(brain.ctxOf(tm), (int)tm.lang, 1, brain.rng)); LogChat(bubbleText); }
     }
 
     // Lawan bicara mati -> semua fitur chat langsung hilang
@@ -586,7 +661,8 @@ static void FrameLogic() {
         talkPed = target; talkId = (uint32_t)(uintptr_t)target;
         PedMind& m = MindOf(target);
         bool id = m.lang == Lang::ID;
-        if (m.gang) SetBubble(m.name + ": " + Vocab::Spontaneous(brain.ctxOf(m), (int)m.lang, 0, brain.rng));   // anggota geng: sambutan sesuai hubungan
+        m.aggroSay = false;
+        if (m.gang || m.aggroT > 0) SetBubble(m.name + ": " + Vocab::Spontaneous(brain.ctxOf(m), (int)m.lang, 0, brain.rng));   // anggota geng: sambutan sesuai hubungan
         else SetBubble(m.name + ": " + (m.knowsPlayer ? (id ? "Eh, lu lagi." : "Oh, it's you again.") : (id ? "Ya?" : "Yeah?")));
         Act_FaceAndStop(talkPed); Act_TalkGesture(talkPed, true);    // hadap player, diam, gesture bicara
     }
@@ -637,7 +713,7 @@ static void FrameLogic() {
     int line = 0;
     if (canTalk) DrawHud(AutoOpenKeyboard ? "[ CHAT ]" : "[ CHAT ]  tekan tombol chat", line++);   // selalu tampil selama dekat ped
     if (bubbleTime > 0) {
-        std::vector<std::string> ls = WrapText(bubbleText, 48);
+        std::vector<std::string> ls = WrapText(bubbleText, 40);
         for (size_t i = 0; i < ls.size() && i < 5; i++) DrawHud(ls[i], line++);
         if (!canTalk) bubbleTime -= dt;                              // selama masih dekat, teks terakhir tetap tampil
     }

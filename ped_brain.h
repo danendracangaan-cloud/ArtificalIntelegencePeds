@@ -67,6 +67,8 @@ struct PedMind {
     Lang  lang = Lang::EN;               // bahasa terakhir yang dipakai player
     int   gender = 0;                    // 0 tidak diketahui, 1 cowok, 2 cewek (dari model skin)
     int   model  = -1;                   // ID skin ped
+    float aggroT = 0;                    // detik tersisa ped marah ke player (habis berantem)
+    bool  aggroSay = false;              // true = baru dipicu, ped perlu langsung membentak
     int   gang = 0, relation = 0;        // geng ped (Vocab::Gang) & hubungannya dengan player (-2..+2)
     std::string pname = "homie";         // cara ped menyebut player ("CJ" / "homie")
     int   timesTalked = 0;
@@ -141,10 +143,14 @@ public:
         return minds.emplace(id, m).first->second;
     }
 
+    // Ped dipukul / memukul player -> marah selama 60 detik
+    void provoke(PedMind& m) { if (m.aggroT <= 0) m.aggroSay = true; m.aggroT = 60.f; m.anger = 95.f; m.happy = 5.f; m.fear = std::min(m.fear, 8.f); }
+
     // Mood drift pelan-pelan (panggil tiap frame dengan dt detik)
     void tick(float dt) {
         for (auto& kv : minds) {
             PedMind& m = kv.second;
+            if (m.aggroT > 0) { m.aggroT -= dt; if (m.aggroT < 0) m.aggroT = 0; }
             m.cooldown -= dt; if (m.cooldown < 0) m.cooldown = 0;
             m.anger += (20 - m.anger) * 0.01f * dt;
             m.fear  += (20 - m.fear)  * 0.02f * dt;
@@ -157,7 +163,8 @@ public:
     // dist: jarak ke player (m), playerMoney, wanted: wanted level, playerArmed: player pegang senjata
     Act decide(PedMind& m, float dist, int playerMoney, int wanted, bool playerArmed) {
         if (m.cooldown > 0) return Act::None;
-        m.cooldown = 8 + rnd() * 12;                       // jangan spam
+        m.cooldown = 8 + rnd() * 12;
+        if (m.aggroT > 0) return rnd() < .6f ? Act::Insult : Act::None;    // lagi marah: ngebentak, bukan menyapa                       // jangan spam
         float r = rnd();
         // Rob: kriminal/serakah, player punya duit, ped nggak takut, player nggak bersenjata
         float pRob = (m.trait == Trait::Criminal ? .10f : .01f) * (m.greed / 50.f)
@@ -289,7 +296,7 @@ public:
     Vocab::Ctx ctxOf(const PedMind& m) {
         Vocab::Ctx c; c.happy = m.happy; c.anger = m.anger; c.fear = m.fear; c.trait = (int)m.trait;
         c.name = m.name; c.knows = m.knowsPlayer; c.times = m.timesTalked;
-        c.gang = m.gang; c.rel = m.relation; c.pname = m.pname;
+        c.gang = m.gang; c.rel = m.relation; c.pname = m.pname; c.aggro = m.aggroT > 0;
         for (int i = (int)m.history.size() - 1; i >= 0 && c.recent.size() < 12; i--)
             if (m.history[i].rfind("N: ", 0) == 0) c.recent.push_back(m.history[i].substr(3));
         return c;
@@ -421,6 +428,7 @@ public:
         }
         if (m.relation <= -1 && (in == Intent::Follow || in == Intent::Stop || in == Intent::Dance || in == Intent::HandsUp || in == Intent::Wave)) ok = false;   // musuh tidak menurut
         if (m.relation >= 2  && (in == Intent::Follow || in == Intent::Stop || in == Intent::Dance || in == Intent::Wave)) ok = true;                           // satu geng: siap
+        if (m.aggroT > 0 && in != Intent::Leave && in != Intent::Flee) ok = false;                                                                                   // lagi marah: menolak
         action = ok ? IntentName(in) : "none";
         return Vocab::IntentLine((int)in, ok, (int)lang, rng);
     }
